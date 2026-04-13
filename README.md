@@ -1,14 +1,26 @@
-# PRIA Frontend Engineering Infrastructure
+# AI Content Optimizer - PRIA Portfolio Demo Project
 
-Professional frontend development infrastructure for AI development services and portfolio projects.
+AI-powered content optimization tool showcasing professional frontend engineering capabilities. This demo project demonstrates a full-stack Next.js application with AI content analysis and optimization features.
 
 ## Features
 
+### AI Content Optimization
+- **Real-time Content Analysis**: Analyze readability, SEO, tone, and grammar
+- **Multi-tone Support**: Optimize for professional, casual, persuasive, or friendly tones
+- **SEO Optimization**: Improve content for search engines
+- **Readability Scoring**: Get instant feedback on content quality
+- **Grammar & Style Suggestions**: AI-powered writing improvements
+
+### Technical Stack
 - **Next.js 14** with App Router and React Server Components
 - **TypeScript** for type-safe development
 - **Tailwind CSS v4** with modern styling utilities
 - **shadcn/ui** component library for accessible, customizable UI components
-- **ESLint** with TypeScript and React rules
+- **Mock AI API**: Simulated AI processing with realistic responses
+- **Real-time UI Updates**: Interactive optimization controls
+
+### Development Features
+- **ESLint** with TypeScript & React rules
 - **Prettier** for consistent code formatting
 - **Husky** Git hooks with lint-staged
 - **Jest + Testing Library** for comprehensive testing
@@ -51,6 +63,23 @@ npm run format:check
 
 ## Project Structure
 
+```
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Landing page
+│   ├── optimizer/         # AI Content Optimizer demo
+│   │   └── page.tsx      # Main optimizer interface
+│   └── api/              # API routes
+│       ├── analyze/      # Content analysis API
+│       ├── optimize/     # Content optimization API
+│       └── export/       # Export functionality
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components
+│   └── shared/           # Shared application components
+├── lib/                   # Utility functions and configurations
+│   └── ai-service.ts     # AI service layer
+├── public/               # Static assets
+└── tests/                # Test files
 ```
 ├── app/                    # Next.js App Router pages
 │   ├── api/               # API routes
@@ -155,7 +184,11 @@ npm run build
 
 ## Support
 
-This infrastructure supports:
-- PRIA-5: Client service presence (landing pages)
-- PRIA-4: Portfolio demonstration projects
-- General frontend development for AI services
+This AI Content Optimizer demo project showcases:
+- **PRIA Portfolio Project**: Full-stack demo application
+- **AI Capabilities**: Content analysis and optimization features
+- **Professional Frontend**: Modern tooling with best practices
+- **Deployment Ready**: Configured for Vercel deployment
+
+### Live Demo
+Visit the deployed version at: [Coming soon - Vercel deployment pending]

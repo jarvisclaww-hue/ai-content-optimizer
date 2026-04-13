@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'PRIA Frontend Engineering',
-  description: 'Professional frontend engineering infrastructure for AI development services',
+  title: 'AI Content Optimizer - PRIA Demo Project',
+  description:
+    'AI-powered content optimization tool showcasing professional frontend engineering with Next.js, TypeScript, and shadcn/ui',
 };
 
 export default function RootLayout({
