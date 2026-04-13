@@ -1,0 +1,40 @@
+# Render configuration for AI Content Optimizer
+# This is a basic configuration that can be customized
+
+services:
+  # Next.js web service
+  - type: web
+    name: ai-content-optimizer
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
+    healthCheckPath: /
+    autoDeploy: true
+    branch: main
+
+  # (Optional) Add a cron job for periodic tasks if needed
+  # - type: cron
+  #   name: cleanup-job
+  #   schedule: "0 0 * * *"  # Daily at midnight
+  #   buildCommand: npm ci
+  #   startCommand: node scripts/cleanup.js
+
+# Database configuration (if needed in future)
+# databases:
+#   - name: ai-optimizer-db
+#     databaseName: ai_optimizer
+#     plan: free
+
+# Environment variables that should be set in Render dashboard
+# Required:
+# - No sensitive environment variables needed for demo
+# Optional (for production):
+# - OPENAI_API_KEY (if integrating real AI services)
+# - DATABASE_URL (if adding database)
+# - NEXTAUTH_SECRET (if adding authentication)
+# - NEXTAUTH_URL (if adding authentication)
