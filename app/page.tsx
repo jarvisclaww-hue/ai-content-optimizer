@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, CheckCircle, Code, Layout, Zap, Shield } from 'lucide-react';
+import { Terminal, CheckCircle, Code, Layout, Zap, Shield, Brain } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -18,6 +18,12 @@ export default function Home() {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Professional frontend infrastructure for AI development services and portfolio projects
           </p>
+          <div className="mt-4">
+            <p className="text-lg font-medium">Now featuring: AI Content Optimizer Demo</p>
+            <p className="text-sm text-muted-foreground">
+              Try our AI-powered content analysis and optimization tool
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2 justify-center mt-6">
             <Badge variant="secondary" className="text-sm">
               Next.js 14
@@ -42,10 +48,13 @@ export default function Home() {
 
         <Alert className="mb-8">
           <Terminal className="h-4 w-4" />
-          <AlertTitle>Frontend Infrastructure Ready</AlertTitle>
+          <AlertTitle>AI Content Optimizer Demo Available</AlertTitle>
           <AlertDescription>
-            This project is configured with modern frontend tooling and best practices for rapid
-            development.
+            Try our AI-powered content analysis and optimization tool at{' '}
+            <a href="/optimizer" className="font-medium underline">
+              /optimizer
+            </a>
+            . This showcases professional frontend engineering with modern tooling.
           </AlertDescription>
         </Alert>
 
@@ -180,17 +189,19 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="gap-2">
-            <Code className="h-4 w-4" />
-            View Components
-          </Button>
+          <a href="/optimizer">
+            <Button size="lg" className="gap-2 w-full">
+              <Brain className="h-4 w-4" />
+              AI Content Optimizer Demo
+            </Button>
+          </a>
           <Button size="lg" variant="outline" className="gap-2">
             <Layout className="h-4 w-4" />
-            Documentation
+            View Components
           </Button>
           <Button size="lg" variant="secondary" className="gap-2">
             <Zap className="h-4 w-4" />
-            Get Started
+            Documentation
           </Button>
         </div>
 
