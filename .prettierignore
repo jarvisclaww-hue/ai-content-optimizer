@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+dist
+*.log
+*.cache
+.DS_Store
+.env*.local
+.vercel
+.next
+public
+coverage
+*.md
+*.json

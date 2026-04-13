@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PRIA Frontend Engineering Infrastructure
 
-## Getting Started
+Professional frontend development infrastructure for AI development services and portfolio projects.
 
-First, run the development server:
+## Features
 
+- **Next.js 14** with App Router and React Server Components
+- **TypeScript** for type-safe development
+- **Tailwind CSS v4** with modern styling utilities
+- **shadcn/ui** component library for accessible, customizable UI components
+- **ESLint** with TypeScript and React rules
+- **Prettier** for consistent code formatting
+- **Husky** Git hooks with lint-staged
+- **Jest + Testing Library** for comprehensive testing
+- **Dark mode** support out of the box
+- **Performance optimized** with best practices
+
+## Quick Start
+
+### Development
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build
+```bash
+npm run build
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Testing
+```bash
+npm test
+# Watch mode
+npm run test:watch
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Linting & Formatting
+```bash
+# Check code quality
+npm run lint
 
-## Learn More
+# Fix linting issues
+npm run lint:fix
 
-To learn more about Next.js, take a look at the following resources:
+# Format code
+npm run format
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Check formatting
+npm run format:check
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Homepage
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components
+│   └── shared/           # Shared application components
+├── lib/                   # Utility functions and configurations
+├── public/               # Static assets
+└── tests/                # Test files
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Available shadcn/ui Components
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The following components are installed and ready to use:
+
+- `Button` - Various button styles and sizes
+- `Card` - Content containers
+- `Input` - Form input fields
+- `Label` - Form labels
+- `Select` - Dropdown selection
+- `DropdownMenu` - Context menus
+- `Dialog` - Modal dialogs
+- `Alert` - Notifications and alerts
+- `Badge` - Status indicators
+
+## Adding New Components
+
+To add more shadcn/ui components:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+## Development Guidelines
+
+### Code Quality
+- All code must pass ESLint checks
+- Prettier formatting is enforced via Git hooks
+- Tests should be written for new functionality
+
+### Git Workflow
+- Pre-commit hooks automatically lint and format staged files
+- Commit messages should follow conventional commits
+
+### Testing
+- Use Jest and React Testing Library
+- Write unit tests for utility functions
+- Write component tests for UI components
+- Write integration tests for complex interactions
+
+## Deployment
+
+This project is configured for deployment on Vercel, but can be deployed to any platform supporting Next.js.
+
+## Support
+
+This infrastructure supports:
+- PRIA-5: Client service presence (landing pages)
+- PRIA-4: Portfolio demonstration projects
+- General frontend development for AI services
