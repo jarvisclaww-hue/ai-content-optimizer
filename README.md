@@ -160,7 +160,21 @@ This project includes a fully functional AI Content Optimizer demo showcasing:
 
 ## Deployment
 
-This project is configured for deployment on Vercel, but can be deployed to any platform supporting Next.js.
+This project is configured for deployment on multiple platforms:
+
+### Render Deployment
+- Configuration: `render.yaml` included
+- Docker support: `Dockerfile` for containerized deployment
+- Build command: `npm ci && npm run build`
+- Start command: `npm start`
+
+### Vercel Deployment
+- Compatible with Vercel's Next.js support
+- No additional configuration needed
+
+### General Deployment
+- Can be deployed to any platform supporting Next.js 14
+- Standalone output enabled in `next.config.ts`
 
 ### Vercel Deployment
 1. Push code to GitHub/GitLab/Bitbucket
