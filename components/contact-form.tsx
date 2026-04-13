@@ -119,9 +119,10 @@ export default function ContactForm() {
               disabled={busy}
             >
               <option value="">Select&hellip;</option>
-              <option value="content-optimization">Content Optimization</option>
-              <option value="document-intelligence">Document Intelligence</option>
-              <option value="custom-development">Custom Development</option>
+              <option value="document-processing">Document Processing</option>
+              <option value="content-analysis">Content Analysis</option>
+              <option value="system-integration">System Integration (Xero, CRM, etc.)</option>
+              <option value="custom-automation">Custom Automation</option>
               <option value="other">Other</option>
             </select>
           </div>

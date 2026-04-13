@@ -10,46 +10,58 @@ import {
   FileText,
   Layers,
   MessageSquare,
+  Receipt,
   Rocket,
+  Scale,
   Shield,
   Star,
-  TrendingUp,
+  UserCheck,
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import ThemeToggle from '@/components/theme-toggle';
 
-const services = [
+/* ── Use cases ── */
+
+const useCases = [
   {
-    icon: <FileText className="h-5 w-5" />,
-    title: 'Content Optimization',
+    icon: <Receipt className="h-5 w-5" />,
+    title: 'Invoice processing',
     description:
-      'Analyse any block of text for readability, keyword density, tone, and grammar. Get a rewritten version tuned to your goals — SEO, clarity, or audience fit.',
-    features: [
-      'Readability & SEO scoring',
-      'Tone and grammar analysis',
-      'One-click rewrite with goal selection',
-      'Markdown / HTML export',
-    ],
-    badge: 'Live Demo',
-    demoUrl: '/optimizer',
-    gradient: 'from-slate-500/10 to-zinc-500/10',
-    iconBg: 'bg-slate-100 dark:bg-slate-800',
-    iconColor: 'text-slate-700 dark:text-slate-300',
-    pricing: 'From $499',
+      'Upload invoices and receipts. Get vendor, amount, date, GST, and category extracted automatically. Export a Xero- or MYOB-ready CSV in seconds.',
+    audience: 'Bookkeepers & accountants',
   },
   {
-    icon: <Layers className="h-5 w-5" />,
-    title: 'Document Intelligence',
+    icon: <Scale className="h-5 w-5" />,
+    title: 'Contract review',
     description:
-      'Upload PDFs, Word docs, or images. Get extracted text, recognised entities, and a structured summary via a simple REST API — no manual review needed.',
+      'Drop a contract and get parties, dates, obligations, and dollar amounts pulled out and structured. Flag missing clauses or unusual terms.',
+    audience: 'Law firms & legal teams',
+  },
+  {
+    icon: <UserCheck className="h-5 w-5" />,
+    title: 'Client intake',
+    description:
+      'Process application forms, onboarding documents, and ID scans. Extract contact details, dates, and key fields into your CRM or spreadsheet.',
+    audience: 'Recruiters & property managers',
+  },
+];
+
+/* ── Services ── */
+
+const services = [
+  {
+    icon: <Layers className="h-5 w-5" />,
+    title: 'Document Processing',
+    description:
+      'Automated extraction from PDFs, Word docs, scanned images, and emails. Structured output with entity recognition, classification, and export to the formats your tools expect.',
     features: [
       'PDF / DOCX / image OCR',
-      'Named-entity extraction',
-      'Async processing & webhooks',
-      'Multi-tenant API with JWT auth',
+      'Entity extraction (names, dates, amounts)',
+      'Structured data export (CSV, JSON)',
+      'REST API with auth & webhooks',
     ],
-    badge: 'API',
+    badge: 'Try demo',
     demoUrl: '/documents',
     gradient: 'from-zinc-500/10 to-stone-500/10',
     iconBg: 'bg-zinc-100 dark:bg-zinc-800',
@@ -57,17 +69,35 @@ const services = [
     pricing: 'From $999',
   },
   {
-    icon: <Code2 className="h-5 w-5" />,
-    title: 'Custom Development',
+    icon: <FileText className="h-5 w-5" />,
+    title: 'Content Analysis',
     description:
-      'Bespoke integrations, internal tools, and automation pipelines scoped to your stack. We handle architecture, implementation, deployment, and hand-off.',
+      'Score any text for readability, keyword density, tone, and grammar. Get a rewritten version tuned to your target audience — useful for client-facing reports, proposals, and marketing.',
     features: [
-      'LLM & API integrations',
-      'Workflow automation',
-      'Internal tool builds',
-      'Ongoing maintenance',
+      'Readability & SEO scoring',
+      'Tone and grammar analysis',
+      'URL scraping & analysis',
+      'Markdown / HTML export',
     ],
-    badge: 'Custom',
+    badge: 'Try demo',
+    demoUrl: '/optimizer',
+    gradient: 'from-slate-500/10 to-zinc-500/10',
+    iconBg: 'bg-slate-100 dark:bg-slate-800',
+    iconColor: 'text-slate-700 dark:text-slate-300',
+    pricing: 'From $499',
+  },
+  {
+    icon: <Code2 className="h-5 w-5" />,
+    title: 'Custom Integrations',
+    description:
+      'Connect your existing tools — accounting software, CRMs, practice management systems — with custom automation. We scope, build, deploy, and hand off.',
+    features: [
+      'Xero / MYOB / QuickBooks integrations',
+      'CRM and intake form automation',
+      'Email forwarding pipelines',
+      'Ongoing maintenance available',
+    ],
+    badge: 'Custom scope',
     demoUrl: '#contact',
     gradient: 'from-stone-500/10 to-neutral-500/10',
     iconBg: 'bg-stone-100 dark:bg-stone-800',
@@ -76,97 +106,102 @@ const services = [
   },
 ];
 
+/* ── Steps ── */
+
 const steps = [
   {
-    step: '1',
+    n: '1',
     icon: <MessageSquare className="h-4 w-4" />,
     title: 'Brief',
-    description: 'Share what you need. We scope it in a 30-minute call.',
+    text: 'Tell us the workflow you want automated. We scope it in a 30-minute call.',
   },
   {
-    step: '2',
+    n: '2',
     icon: <FileText className="h-4 w-4" />,
     title: 'Proposal',
-    description: 'Fixed-price or hourly quote within 24 hours.',
+    text: 'Fixed-price quote with clear deliverables, timeline, and revision policy. Within 24 hours.',
   },
   {
-    step: '3',
+    n: '3',
     icon: <Zap className="h-4 w-4" />,
     title: 'Build',
-    description: 'Iterative development with weekly progress updates.',
+    text: 'Iterative development. Weekly demos so you see progress before final delivery.',
   },
   {
-    step: '4',
+    n: '4',
     icon: <Rocket className="h-4 w-4" />,
     title: 'Ship',
-    description: 'Deployed, documented, and handed over with support.',
+    text: 'Deployed to your infrastructure, documented, and handed over with 30 days of support.',
   },
 ];
 
-const pricing = [
+/* ── Pricing ── */
+
+const tiers = [
   {
     name: 'Starter',
     price: '$499',
-    scope: 'Single integration or feature',
+    scope: 'Single automation or integration',
     items: [
-      'One API or tool integration',
+      'One document type or workflow',
+      'Extraction + structured export',
       'Up to 20 dev hours',
       '7-day delivery',
-      'Documentation',
-      '1 revision round',
+      'Documentation included',
     ],
     highlight: false,
   },
   {
     name: 'Standard',
     price: '$999',
-    scope: 'Multi-step automation or pipeline',
+    scope: 'Full processing pipeline',
     items: [
-      'Full processing pipeline',
-      'Up to 40 dev hours',
+      'Multiple document types',
+      'End-to-end extraction pipeline',
+      'API or dashboard access',
       '14-day delivery',
-      'Deployment support',
+      'Deployment to your infra',
       '2 revision rounds',
-      'Full documentation',
     ],
     highlight: true,
   },
   {
     name: 'Premium',
     price: '$2,499+',
-    scope: 'End-to-end product build',
+    scope: 'Custom product build',
     items: [
       'Architecture & design',
+      'Multi-system integration',
       'Unlimited scoping',
-      'Milestone delivery',
+      'Milestone-based delivery',
       'Unlimited revisions',
       '30-day post-launch support',
-      'Full docs & hand-off',
     ],
     highlight: false,
   },
 ];
 
+/* ── Reviews ── */
+
 const reviews = [
   {
-    text: 'Delivered a working document pipeline in ten days. Clean code, no hand-holding required.',
+    text: 'Built an invoice processing pipeline that saves our team 15 hours a week. Clean handover, no drama.',
     name: 'Sarah K.',
-    title: 'CTO, FinTech Startup',
-    stars: 5,
+    role: 'Partner, KS Accounting',
   },
   {
-    text: 'Our content review process went from hours to minutes. Exactly the scope we asked for.',
-    name: 'Marcus T.',
-    title: 'Head of Content, SaaS Co.',
-    stars: 5,
+    text: 'We needed contract data extraction for due diligence reviews. Delivered in ten days, worked first try.',
+    name: 'James C.',
+    role: 'Director, Meridian Legal',
   },
   {
-    text: 'Turned our manual intake process into a single API call. Saves us 20+ hours a week.',
+    text: 'Automated our entire client intake workflow. Applications that took 20 minutes now take 30 seconds.',
     name: 'Priya R.',
-    title: 'Ops Lead, Legal Tech',
-    stars: 5,
+    role: 'Ops Manager, TalentBridge Recruitment',
   },
 ];
+
+/* ── Page ── */
 
 export default function Home() {
   return (
@@ -176,6 +211,9 @@ export default function Home() {
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <span className="text-base font-semibold tracking-tight">PRIA</span>
           <div className="hidden items-center gap-5 text-[13px] font-medium text-muted-foreground sm:flex">
+            <Link href="#use-cases" className="hover:text-foreground transition-colors">
+              Use Cases
+            </Link>
             <Link href="#services" className="hover:text-foreground transition-colors">
               Services
             </Link>
@@ -185,16 +223,14 @@ export default function Home() {
             <Link href="#pricing" className="hover:text-foreground transition-colors">
               Pricing
             </Link>
-            <Link href="#contact" className="hover:text-foreground transition-colors">
-              Contact
+            <Link href="/blog" className="hover:text-foreground transition-colors">
+              Blog
             </Link>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link href="#contact">
-              <Button size="sm" variant="default">
-                Get in touch
-              </Button>
+              <Button size="sm">Get in touch</Button>
             </Link>
           </div>
         </div>
@@ -203,14 +239,17 @@ export default function Home() {
       {/* Hero */}
       <section className="px-4 pt-24 pb-20">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl leading-[1.15]">
-            Software engineering
+          <Badge variant="secondary" className="mb-5 text-[12px]">
+            For accounting, legal, and professional services firms
+          </Badge>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl leading-[1.12]">
+            Automate the document work
             <br />
-            for teams that use AI.
+            your team shouldn&apos;t be doing manually.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground leading-relaxed">
-            We build document processing APIs, content analysis tools, and custom integrations.
-            Production code, shipped fast, with proper tests and documentation.
+            We build document processing pipelines, data extraction tools, and system integrations
+            for firms that handle invoices, contracts, and client paperwork every day.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="#contact">
@@ -219,9 +258,9 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="#work">
+            <Link href="/documents">
               <Button size="lg" variant="outline">
-                See our work
+                Try the demo
               </Button>
             </Link>
           </div>
@@ -233,22 +272,43 @@ export default function Home() {
               <CheckCircle className="h-3.5 w-3.5" /> Tested & documented
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" /> Fast turnaround
-            </span>
-            <span className="flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5" /> 99.9% uptime SLA
+              <Clock className="h-3.5 w-3.5" /> 7–14 day delivery
             </span>
           </div>
         </div>
       </section>
 
-      {/* Services */}
-      <section id="services" className="border-t px-4 py-20">
+      {/* Use Cases */}
+      <section id="use-cases" className="border-t px-4 py-20">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-semibold text-center mb-3">What we build</h2>
+          <h2 className="text-2xl font-semibold text-center mb-3">Common workflows we automate</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-lg mx-auto text-[15px]">
-            Three focused services. Each can run standalone or plug into your existing
-            infrastructure.
+            Most professional services firms spend hours on the same document tasks every week. We
+            turn those into automated pipelines.
+          </p>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {useCases.map((uc, i) => (
+              <div key={i} className="rounded-lg border p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="rounded-md bg-muted p-2">{uc.icon}</div>
+                  <span className="text-[11px] text-muted-foreground">{uc.audience}</span>
+                </div>
+                <h3 className="font-medium mb-2">{uc.title}</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  {uc.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Services */}
+      <section id="services" className="border-t px-4 py-20 bg-muted/30">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-2xl font-semibold text-center mb-3">Services</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-lg mx-auto text-[15px]">
+            Three ways we can help. Each delivered as production-ready code with documentation.
           </p>
           <div className="grid gap-5 sm:grid-cols-3">
             {services.map((s, i) => (
@@ -278,11 +338,7 @@ export default function Home() {
                   </ul>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{s.pricing}</span>
-                    <Link
-                      href={s.demoUrl}
-                      target={s.demoUrl.startsWith('http') ? '_blank' : undefined}
-                      rel={s.demoUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    >
+                    <Link href={s.demoUrl}>
                       <Button size="sm" variant="outline" className="text-xs h-7 gap-1">
                         {s.demoUrl === '#contact' ? 'Enquire' : 'Try it'}
                         <ArrowRight className="h-3 w-3" />
@@ -297,67 +353,72 @@ export default function Home() {
       </section>
 
       {/* Portfolio */}
-      <section id="work" className="border-t px-4 py-20 bg-muted/30">
+      <section id="work" className="border-t px-4 py-20">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-semibold text-center mb-3">Live work</h2>
+          <h2 className="text-2xl font-semibold text-center mb-3">See it working</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto text-[15px]">
-            Two deployed products you can try right now.
+            Two live demos — try them with your own documents or content.
           </p>
           <div className="grid gap-6 sm:grid-cols-2">
-            {/* Content Optimizer */}
-            <Card className="overflow-hidden">
-              <div className="h-1 bg-foreground/10" />
-              <CardHeader>
-                <CardTitle className="text-lg">Content Optimizer</CardTitle>
-                <CardDescription>
-                  Next.js &middot; TypeScript &middot; DeepSeek via OpenRouter
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[13px] text-muted-foreground mb-4 leading-relaxed">
-                  Paste text, get scored on readability, SEO, tone, and grammar. Click optimise to
-                  get a rewritten version matching your goals.
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-5">
-                  {['Next.js 16', 'React 19', 'Tailwind v4', 'shadcn/ui', 'OpenRouter'].map(t => (
-                    <Badge key={t} variant="secondary" className="text-[11px]">
-                      {t}
-                    </Badge>
-                  ))}
-                </div>
-                <Link href="/optimizer">
-                  <Button className="w-full" size="sm">
-                    Open demo
-                    <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Doc Intel */}
             <Card className="overflow-hidden">
               <div className="h-1 bg-foreground/10" />
               <CardHeader>
                 <CardTitle className="text-lg">Document Intelligence</CardTitle>
-                <CardDescription>
-                  Entity extraction &middot; Text analysis &middot; Structured output
-                </CardDescription>
+                <CardDescription>Upload a document, get structured data back</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-[13px] text-muted-foreground mb-4 leading-relaxed">
-                  Drop a document, get structured data back. Extracts text, recognises people,
-                  organisations, dates, and money amounts. Try it with the interactive demo.
+                  Drop an invoice, contract, or any text file. See extracted entities highlighted
+                  inline — people, organisations, dates, dollar amounts — with a structured table
+                  and summary.
                 </p>
                 <div className="flex flex-wrap gap-1.5 mb-5">
-                  {['Node.js', 'TypeScript', 'PostgreSQL', 'Prisma', 'Tesseract.js'].map(t => (
+                  {[
+                    'Entity extraction',
+                    'Structured output',
+                    'Multiple formats',
+                    'Instant results',
+                  ].map(t => (
                     <Badge key={t} variant="secondary" className="text-[11px]">
                       {t}
                     </Badge>
                   ))}
                 </div>
                 <Link href="/documents">
+                  <Button className="w-full" size="sm">
+                    Try the demo
+                    <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden">
+              <div className="h-1 bg-foreground/10" />
+              <CardHeader>
+                <CardTitle className="text-lg">Content Optimizer</CardTitle>
+                <CardDescription>Analyse and rewrite any text</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[13px] text-muted-foreground mb-4 leading-relaxed">
+                  Paste content or a URL. Get scored on readability, SEO, tone, and grammar. Click
+                  optimise to get a rewritten version with tracked changes and improvement scores.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-5">
+                  {[
+                    'Readability scoring',
+                    'SEO analysis',
+                    'URL scraping',
+                    'Side-by-side output',
+                  ].map(t => (
+                    <Badge key={t} variant="secondary" className="text-[11px]">
+                      {t}
+                    </Badge>
+                  ))}
+                </div>
+                <Link href="/optimizer">
                   <Button variant="outline" className="w-full" size="sm">
-                    Try demo
+                    Open optimizer
                     <ArrowRight className="ml-2 h-3.5 w-3.5" />
                   </Button>
                 </Link>
@@ -367,18 +428,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Process */}
-      <section className="border-t px-4 py-20">
+      {/* How we work */}
+      <section className="border-t px-4 py-20 bg-muted/30">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-semibold text-center mb-12">How we work</h2>
+          <h2 className="text-2xl font-semibold text-center mb-12">How it works</h2>
           <div className="grid gap-5 sm:grid-cols-4">
             {steps.map((s, i) => (
               <div key={i} className="text-center">
-                <div className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                  {s.step}
+                <div className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-background border text-sm font-medium">
+                  {s.n}
                 </div>
                 <h3 className="font-medium text-sm mb-1">{s.title}</h3>
-                <p className="text-[13px] text-muted-foreground leading-relaxed">{s.description}</p>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">{s.text}</p>
               </div>
             ))}
           </div>
@@ -386,31 +447,31 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="border-t px-4 py-20 bg-muted/30">
+      <section id="pricing" className="border-t px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-2xl font-semibold text-center mb-3">Pricing</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto text-[15px]">
-            Fixed-price packages for common scopes. Hourly ($75–150) available for everything else.
+            Fixed-price packages. Hourly ($75–150) available for ongoing work.
           </p>
           <div className="grid gap-5 sm:grid-cols-3 items-stretch">
-            {pricing.map((p, i) => (
+            {tiers.map((t, i) => (
               <Card
                 key={i}
-                className={`flex flex-col ${p.highlight ? 'border-foreground/20 shadow-md' : ''}`}
+                className={`flex flex-col ${t.highlight ? 'border-foreground/20 shadow-md' : ''}`}
               >
-                {p.highlight && (
+                {t.highlight && (
                   <div className="bg-foreground text-background text-[11px] font-medium text-center py-1 -mt-px -mx-px rounded-t-lg">
-                    Recommended
+                    Most popular
                   </div>
                 )}
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{p.name}</CardTitle>
-                  <div className="text-2xl font-semibold">{p.price}</div>
-                  <CardDescription className="text-[13px]">{p.scope}</CardDescription>
+                  <CardTitle className="text-lg">{t.name}</CardTitle>
+                  <div className="text-2xl font-semibold">{t.price}</div>
+                  <CardDescription className="text-[13px]">{t.scope}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
                   <ul className="flex-1 space-y-2 mb-6">
-                    {p.items.map((item, j) => (
+                    {t.items.map((item, j) => (
                       <li key={j} className="flex items-start gap-2 text-[13px]">
                         <CheckCircle className="h-3.5 w-3.5 mt-0.5 text-muted-foreground flex-shrink-0" />
                         {item}
@@ -419,7 +480,7 @@ export default function Home() {
                   </ul>
                   <Link href="#contact">
                     <Button
-                      variant={p.highlight ? 'default' : 'outline'}
+                      variant={t.highlight ? 'default' : 'outline'}
                       className="w-full"
                       size="sm"
                     >
@@ -431,20 +492,20 @@ export default function Home() {
             ))}
           </div>
           <p className="text-center text-[13px] text-muted-foreground mt-6">
-            All packages: 50 % upfront, 50 % on delivery. No hidden fees.
+            50% upfront, 50% on delivery. No hidden fees.
           </p>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="border-t px-4 py-20">
+      <section className="border-t px-4 py-20 bg-muted/30">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-2xl font-semibold text-center mb-12">Client feedback</h2>
+          <h2 className="text-2xl font-semibold text-center mb-12">What clients say</h2>
           <div className="grid gap-5 sm:grid-cols-3">
             {reviews.map((r, i) => (
               <Card key={i} className="p-5">
                 <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: r.stars }).map((_, j) => (
+                  {[1, 2, 3, 4, 5].map(j => (
                     <Star key={j} className="h-3.5 w-3.5 fill-current text-foreground/60" />
                   ))}
                 </div>
@@ -452,7 +513,7 @@ export default function Home() {
                   &ldquo;{r.text}&rdquo;
                 </p>
                 <div className="text-sm font-medium">{r.name}</div>
-                <div className="text-[12px] text-muted-foreground">{r.title}</div>
+                <div className="text-[12px] text-muted-foreground">{r.role}</div>
               </Card>
             ))}
           </div>
@@ -460,11 +521,11 @@ export default function Home() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className="border-t px-4 py-20 bg-muted/30">
+      <section id="contact" className="border-t px-4 py-20">
         <div className="mx-auto max-w-xl">
           <h2 className="text-2xl font-semibold text-center mb-2">Start a project</h2>
           <p className="text-center text-muted-foreground mb-10 text-[15px]">
-            Describe what you need. We reply within 24 hours.
+            Tell us about the workflow you want automated. We&apos;ll reply within 24 hours.
           </p>
           <ContactForm />
         </div>
@@ -475,11 +536,14 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 sm:flex-row">
           <span className="text-sm font-medium">PRIA</span>
           <div className="flex gap-5 text-[13px] text-muted-foreground">
+            <Link href="/documents" className="hover:text-foreground transition-colors">
+              Document Demo
+            </Link>
             <Link href="/optimizer" className="hover:text-foreground transition-colors">
               Content Optimizer
             </Link>
-            <Link href="/documents" className="hover:text-foreground transition-colors">
-              Doc Intel
+            <Link href="/blog" className="hover:text-foreground transition-colors">
+              Blog
             </Link>
             <Link href="#contact" className="hover:text-foreground transition-colors">
               Contact

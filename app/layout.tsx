@@ -16,17 +16,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://ai-content-optimizer-pi.vercel.app'),
   title: {
-    default: 'PRIA — Software engineering for teams that use AI',
+    default: 'PRIA — Document automation for professional services firms',
     template: '%s | PRIA',
   },
   description:
-    'Document processing APIs, content analysis tools, and custom integrations. Production code, shipped fast.',
+    'We automate document workflows for accounting, legal, and professional services firms. Invoice processing, contract review, client intake, and custom integrations.',
   keywords: [
-    'software engineering',
-    'document processing',
-    'content optimization',
-    'API development',
-    'custom integrations',
+    'document automation',
+    'invoice processing',
+    'contract review',
+    'accounting automation',
+    'document extraction',
+    'professional services',
   ],
   authors: [{ name: 'PRIA' }],
   openGraph: {
@@ -34,14 +35,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://ai-content-optimizer-pi.vercel.app',
     siteName: 'PRIA',
-    title: 'PRIA — Software engineering for teams that use AI',
+    title: 'PRIA — Document automation for professional services firms',
     description:
-      'Document processing APIs, content analysis tools, and custom integrations. Production code, shipped fast.',
+      'Invoice processing, contract review, client intake automation, and custom integrations for accounting, legal, and professional services firms.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PRIA — Software engineering for teams that use AI',
-    description: 'Document processing APIs, content analysis tools, and custom integrations.',
+    title: 'PRIA — Document automation for professional services firms',
+    description:
+      'Invoice processing, contract review, client intake automation, and custom integrations.',
   },
   robots: { index: true, follow: true },
 };
@@ -51,7 +53,7 @@ const jsonLd = {
   '@type': 'ProfessionalService',
   name: 'PRIA',
   description:
-    'Software engineering services: document processing, content analysis, and custom integrations.',
+    'Document automation for professional services firms: invoice processing, contract review, client intake, and custom integrations.',
   url: 'https://ai-content-optimizer-pi.vercel.app',
   serviceType: 'Software Engineering',
   areaServed: 'Worldwide',

@@ -18,19 +18,21 @@ interface Entity {
   index: number;
 }
 
+interface StructuredField {
+  label: string;
+  value: string;
+  type: string;
+}
+
 interface ProcessingResult {
   text: string;
   entities: Entity[];
+  structured: StructuredField[];
   summary: string;
-  stats: {
-    wordCount: number;
-    charCount: number;
-    entityCount: number;
-    processingMs: number;
-  };
+  stats: { wordCount: number; charCount: number; entityCount: number; processingMs: number };
 }
 
-// ── Client-side extraction ───────────────────────────────────
+// ── Extraction ───────────────────────────────────────────────
 
 function extractEntities(text: string): Entity[] {
   const entities: Entity[] = [];
@@ -39,11 +41,7 @@ function extractEntities(text: string): Entity[] {
   const patterns: [RegExp, string][] = [
     [/\b[A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?\b/g, 'PERSON'],
     [
-      /\b(?:Inc|Corp|LLC|Ltd|Co|Group|Foundation|Institute|University|Association|Agency|Department)\b/gi,
-      '__SKIP__',
-    ],
-    [
-      /\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:Inc|Corp|LLC|Ltd|Co|Group|Foundation|Institute|University)\b/g,
+      /\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:Inc|Corp|LLC|Ltd|Co|Group|Foundation|Institute|University|Pty)\b/g,
       'ORG',
     ],
     [
@@ -53,18 +51,19 @@ function extractEntities(text: string): Entity[] {
     [/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, 'DATE'],
     [/\b\d{4}-\d{2}-\d{2}\b/g, 'DATE'],
     [/\$[\d,]+(?:\.\d{2})?\b/g, 'MONEY'],
-    [/\b\d+(?:,\d{3})*(?:\.\d+)?\s*(?:USD|EUR|GBP|AUD|CAD)\b/gi, 'MONEY'],
+    [/\b[\d,]+(?:\.\d{2})?\s*(?:USD|AUD|EUR|GBP)\b/gi, 'MONEY'],
     [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, 'EMAIL'],
     [/\bhttps?:\/\/[^\s<>]+/g, 'URL'],
     [/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, 'PHONE'],
     [
-      /\b\d{1,5}\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:St|Ave|Blvd|Dr|Rd|Ln|Ct|Way|Pkwy|Pl)\.?\b/g,
+      /\b\d{1,5}\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:St|Ave|Blvd|Dr|Rd|Ln|Ct|Way|Pkwy|Pl|Street|Avenue|Road|Drive|Lane)\.?\b/g,
       'ADDRESS',
     ],
+    [/\bINV[-\s]?\d{3,}\b/g, 'INVOICE_NUM'],
+    [/\bABN\s?\d{2}\s?\d{3}\s?\d{3}\s?\d{3}\b/g, 'ABN'],
   ];
 
   for (const [rx, type] of patterns) {
-    if (type === '__SKIP__') continue;
     let m;
     while ((m = rx.exec(text)) !== null) {
       const key = `${type}:${m[0]}`;
@@ -78,19 +77,82 @@ function extractEntities(text: string): Entity[] {
   return entities.sort((a, b) => a.index - b.index);
 }
 
+function extractStructuredFields(text: string, entities: Entity[]): StructuredField[] {
+  const fields: StructuredField[] = [];
+  const seen = new Set<string>();
+
+  // Extract key-value pairs from text (e.g., "Invoice Number: INV-001")
+  const kvPatterns = [
+    { rx: /(?:Invoice|Inv)[\s#:.-]*(\S+)/i, label: 'Invoice Number' },
+    { rx: /(?:Date|Invoice Date|Issued)[:\s]+([^\n,]+)/i, label: 'Date' },
+    { rx: /(?:Due Date|Payment Due)[:\s]+([^\n,]+)/i, label: 'Due Date' },
+    {
+      rx: /(?:Total|Amount Due|Grand Total|Balance Due)[:\s]*\$?([\d,.]+)/i,
+      label: 'Total Amount',
+    },
+    { rx: /(?:Subtotal|Sub-total)[:\s]*\$?([\d,.]+)/i, label: 'Subtotal' },
+    { rx: /(?:GST|Tax|VAT)[:\s]*\$?([\d,.]+)/i, label: 'Tax' },
+    { rx: /(?:ABN)[:\s]*([\d\s]+)/i, label: 'ABN' },
+    { rx: /(?:Bill To|Client|Customer|Billed To)[:\s]*([^\n]+)/i, label: 'Billed To' },
+    { rx: /(?:From|Vendor|Supplier|Issued By)[:\s]*([^\n]+)/i, label: 'From' },
+  ];
+
+  for (const { rx, label } of kvPatterns) {
+    const match = text.match(rx);
+    if (match && match[1]?.trim()) {
+      const val = match[1].trim();
+      if (!seen.has(label)) {
+        seen.add(label);
+        fields.push({ label, value: val, type: 'extracted' });
+      }
+    }
+  }
+
+  // Group entities by type
+  const grouped: Record<string, string[]> = {};
+  for (const e of entities) {
+    if (!grouped[e.type]) grouped[e.type] = [];
+    if (!grouped[e.type].includes(e.value)) grouped[e.type].push(e.value);
+  }
+
+  const typeLabels: Record<string, string> = {
+    PERSON: 'People',
+    ORG: 'Organisations',
+    DATE: 'Dates',
+    MONEY: 'Amounts',
+    EMAIL: 'Email Addresses',
+    PHONE: 'Phone Numbers',
+    ADDRESS: 'Addresses',
+    INVOICE_NUM: 'Invoice Numbers',
+    ABN: 'ABN',
+  };
+
+  for (const [type, values] of Object.entries(grouped)) {
+    const label = typeLabels[type] || type;
+    if (!seen.has(label)) {
+      seen.add(label);
+      fields.push({ label, value: values.join(', '), type: 'entity' });
+    }
+  }
+
+  return fields;
+}
+
 function generateSummary(text: string): string {
   const sentences = text.match(/[^.!?]+[.!?]+/g);
-  if (!sentences || sentences.length === 0) return text.slice(0, 250).trim();
+  if (!sentences || sentences.length === 0) return text.slice(0, 300).trim();
   return sentences.slice(0, 3).join(' ').trim();
 }
 
 function processText(text: string, startTime: number): ProcessingResult {
   const entities = extractEntities(text);
+  const structured = extractStructuredFields(text, entities);
   const summary = generateSummary(text);
   const words = text.split(/\s+/).filter(w => w.length > 0);
   return {
     text,
     entities,
+    structured,
     summary,
     stats: {
       wordCount: words.length,
@@ -101,9 +163,50 @@ function processText(text: string, startTime: number): ProcessingResult {
   };
 }
 
-// ── Pre-loaded demo ──────────────────────────────────────────
+// ── Demo documents ───────────────────────────────────────────
 
-const DEMO_TEXT = `CONSULTING AGREEMENT
+const DEMOS = {
+  invoice: {
+    name: 'Sample Invoice',
+    filename: 'invoice-2026-0042.txt',
+    text: `INVOICE
+
+Invoice Number: INV-2026-0042
+Date: April 10, 2026
+Due Date: May 10, 2026
+
+From: Mitchell Consulting Pty Ltd
+ABN 51 824 753 556
+42 Oak Street, Melbourne VIC 3000
+sarah@mitchellconsulting.com.au
++61 3 9555 0147
+
+Bill To: Henderson & Associates
+Level 12, 200 Collins Street, Melbourne VIC 3000
+Attn: David Henderson
+
+Description                          Hours    Rate      Amount
+─────────────────────────────────────────────────────────────
+Financial systems integration          24    $175.00   $4,200.00
+Data migration (Xero to MYOB)         16    $175.00   $2,800.00
+API development & testing              12    $175.00   $2,100.00
+Documentation & training                8    $150.00   $1,200.00
+─────────────────────────────────────────────────────────────
+                              Subtotal:              $10,300.00
+                              GST (10%):              $1,030.00
+                              Total:                 $11,330.00
+
+Payment Terms: Net 30
+Bank: Commonwealth Bank
+BSB: 063-000
+Account: 1234 5678
+
+Thank you for your business.`,
+  },
+  contract: {
+    name: 'Consulting Agreement',
+    filename: 'consulting-agreement.txt',
+    text: `CONSULTING AGREEMENT
 
 This Consulting Agreement ("Agreement") is entered into as of March 15, 2026, by and between Acme Technologies Inc, a Delaware corporation with offices at 350 Fifth Avenue, New York, NY 10118 ("Client"), and Sarah Mitchell, an independent consultant residing at 42 Oak Street, San Francisco, CA 94102 ("Consultant").
 
@@ -124,9 +227,50 @@ For questions regarding this agreement, contact legal@acmetech.com or call +1 (2
 Signed,
 James Chen
 Chief Technology Officer
-Acme Technologies Inc`;
+Acme Technologies Inc`,
+  },
+  intake: {
+    name: 'Client Intake Form',
+    filename: 'intake-form.txt',
+    text: `CLIENT INTAKE FORM — Henderson & Associates
 
-// ── Component ────────────────────────────────────────────────
+Date: April 8, 2026
+Completed by: Rebecca Foster
+
+PERSONAL DETAILS
+Full Name: Rebecca Anne Foster
+Date of Birth: 15/03/1988
+Email: rebecca.foster@gmail.com
+Phone: +61 4 1234 5678
+Address: 17 Elm Avenue, Richmond VIC 3121
+
+BUSINESS DETAILS
+Company: Foster Design Studio Pty Ltd
+ABN 33 456 789 012
+Business Address: Suite 4, 88 Church Street, Richmond VIC 3121
+Industry: Graphic Design & Branding
+Annual Revenue: $320,000
+Number of Employees: 4
+
+ENGAGEMENT DETAILS
+Service Requested: Annual tax return preparation and BAS lodgement
+Preferred Communication: Email
+Current Accounting Software: Xero
+Previous Accountant: Smith & Co Accounting
+Reason for Change: Relocated to Melbourne
+
+DOCUMENTS PROVIDED
+- Prior year tax return (2024-2025)
+- Xero access credentials
+- Business Activity Statements (Q1-Q3 2025-2026)
+- Motor vehicle logbook
+
+Signed: Rebecca Foster
+Date: 08/04/2026`,
+  },
+};
+
+// ── Entity colours ───────────────────────────────────────────
 
 const entityColors: Record<string, string> = {
   PERSON: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
@@ -137,7 +281,11 @@ const entityColors: Record<string, string> = {
   URL: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300',
   PHONE: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
   ADDRESS: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
+  INVOICE_NUM: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
+  ABN: 'bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300',
 };
+
+// ── Component ────────────────────────────────────────────────
 
 export default function DocumentsPage() {
   const [result, setResult] = useState<ProcessingResult | null>(null);
@@ -150,7 +298,6 @@ export default function DocumentsPage() {
   const process = useCallback((text: string, name?: string) => {
     setLoading(true);
     setFileName(name || null);
-    // Simulate a brief processing delay for visual feedback
     setTimeout(() => {
       const start = Date.now();
       setResult(processText(text, start));
@@ -171,7 +318,7 @@ export default function DocumentsPage() {
         reader.readAsText(file);
       } else {
         alert(
-          'This demo supports .txt, .html, and .md files. The full API handles PDFs, DOCX, and images — see the API docs.'
+          'This demo supports .txt, .html, and .md files. The full API handles PDFs, DOCX, and images.'
         );
       }
     },
@@ -192,33 +339,27 @@ export default function DocumentsPage() {
     if (pasteText.trim()) process(pasteText, 'Pasted text');
   };
 
-  const loadDemo = () => process(DEMO_TEXT, 'demo-consulting-agreement.txt');
+  const loadDemo = (key: keyof typeof DEMOS) => {
+    const d = DEMOS[key];
+    process(d.text, d.filename);
+  };
 
   const reset = () => {
     setResult(null);
     setFileName(null);
     setPasteText('');
-    setLoading(false);
   };
 
-  // Build highlighted text
+  // ── Highlighted text builder ──
+
   const highlightedText = (text: string, entities: Entity[]) => {
-    if (entities.length === 0) return <span>{text}</span>;
-
-    const parts: React.ReactNode[] = [];
-    const lastEnd = 0;
-
-    // Find entity positions in text for highlighting
     const positions: { start: number; end: number; entity: Entity }[] = [];
     for (const ent of entities) {
-      const idx = text.indexOf(ent.value, lastEnd > 0 ? 0 : 0);
-      if (idx !== -1) {
-        positions.push({ start: idx, end: idx + ent.value.length, entity: ent });
-      }
+      const idx = text.indexOf(ent.value);
+      if (idx !== -1) positions.push({ start: idx, end: idx + ent.value.length, entity: ent });
     }
     positions.sort((a, b) => a.start - b.start);
 
-    // Deduplicate overlapping
     const filtered: typeof positions = [];
     let prevEnd = 0;
     for (const p of positions) {
@@ -228,11 +369,11 @@ export default function DocumentsPage() {
       }
     }
 
+    const parts: React.ReactNode[] = [];
     let cursor = 0;
     for (const pos of filtered) {
-      if (pos.start > cursor) {
+      if (pos.start > cursor)
         parts.push(<span key={`t-${cursor}`}>{text.slice(cursor, pos.start)}</span>);
-      }
       parts.push(
         <mark
           key={`e-${pos.start}`}
@@ -244,10 +385,7 @@ export default function DocumentsPage() {
       );
       cursor = pos.end;
     }
-    if (cursor < text.length) {
-      parts.push(<span key={`t-${cursor}`}>{text.slice(cursor)}</span>);
-    }
-
+    if (cursor < text.length) parts.push(<span key={`t-${cursor}`}>{text.slice(cursor)}</span>);
     return <>{parts}</>;
   };
 
@@ -283,11 +421,11 @@ export default function DocumentsPage() {
         {!result && !loading ? (
           /* ── Upload state ── */
           <div className="mx-auto max-w-2xl space-y-6">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-semibold mb-2">Document Intelligence</h1>
+            <div className="mb-8 text-center">
+              <h1 className="mb-2 text-2xl font-semibold">Document Intelligence</h1>
               <p className="text-[15px] text-muted-foreground">
-                Upload a document or paste text. Get extracted content, recognised entities, and a
-                structured summary.
+                Upload a document or paste text. Get extracted entities, structured fields, and a
+                summary.
               </p>
             </div>
 
@@ -303,9 +441,9 @@ export default function DocumentsPage() {
               className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors ${dragOver ? 'border-foreground/40 bg-muted/50' : 'border-border hover:border-foreground/20 hover:bg-muted/30'}`}
             >
               <Upload className="mb-3 h-8 w-8 text-muted-foreground/50" />
-              <p className="text-sm font-medium mb-1">Drop a file here or click to browse</p>
+              <p className="mb-1 text-sm font-medium">Drop a file here or click to browse</p>
               <p className="text-[12px] text-muted-foreground">
-                TXT, HTML, MD supported in demo &middot; Full API handles PDF, DOCX, images
+                TXT, HTML, MD in demo &middot; Full API handles PDF, DOCX, images
               </p>
               <input
                 ref={fileRef}
@@ -331,9 +469,9 @@ export default function DocumentsPage() {
                 placeholder="Paste document content here..."
                 value={pasteText}
                 onChange={e => setPasteText(e.target.value)}
-                className="min-h-[120px] text-sm"
+                className="min-h-[100px] text-sm"
               />
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <Button
                   size="sm"
                   onClick={handlePaste}
@@ -342,14 +480,39 @@ export default function DocumentsPage() {
                 >
                   Process text
                 </Button>
-                <Button size="sm" variant="outline" onClick={loadDemo} className="text-xs">
-                  Load demo document
+                <div className="h-px w-px" />
+                <span className="flex items-center text-[12px] text-muted-foreground mr-1">
+                  Try a sample:
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => loadDemo('invoice')}
+                  className="text-xs h-7"
+                >
+                  Invoice
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => loadDemo('contract')}
+                  className="text-xs h-7"
+                >
+                  Contract
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => loadDemo('intake')}
+                  className="text-xs h-7"
+                >
+                  Intake form
                 </Button>
               </div>
             </div>
           </div>
         ) : loading ? (
-          /* ── Loading state ── */
+          /* ── Loading ── */
           <div className="flex flex-col items-center justify-center py-24">
             <div className="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
             <p className="text-sm text-muted-foreground">Extracting text and entities...</p>
@@ -368,10 +531,10 @@ export default function DocumentsPage() {
                 {result.stats.wordCount.toLocaleString()} words
               </span>
               <span className="text-[13px] text-muted-foreground">
-                {result.stats.charCount.toLocaleString()} chars
+                {result.stats.entityCount} entities
               </span>
               <span className="text-[13px] text-muted-foreground">
-                {result.stats.entityCount} entities
+                {result.structured.length} fields extracted
               </span>
               <div className="ml-auto flex items-center gap-1 text-[12px] text-muted-foreground">
                 <Clock className="h-3 w-3" />
@@ -403,8 +566,11 @@ export default function DocumentsPage() {
             )}
 
             {/* Tabbed results */}
-            <Tabs defaultValue="annotated">
+            <Tabs defaultValue="structured">
               <TabsList className="h-9">
+                <TabsTrigger value="structured" className="text-[13px]">
+                  Structured Data ({result.structured.length})
+                </TabsTrigger>
                 <TabsTrigger value="annotated" className="text-[13px]">
                   Annotated Text
                 </TabsTrigger>
@@ -414,10 +580,42 @@ export default function DocumentsPage() {
                 <TabsTrigger value="summary" className="text-[13px]">
                   Summary
                 </TabsTrigger>
-                <TabsTrigger value="raw" className="text-[13px]">
-                  Plain Text
-                </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="structured">
+                <Card>
+                  <CardContent className="p-5">
+                    {result.structured.length === 0 ? (
+                      <p className="py-4 text-center text-[13px] text-muted-foreground">
+                        No structured fields detected.
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-[13px]">
+                          <thead>
+                            <tr className="border-b text-left">
+                              <th className="pb-2 pr-6 font-medium text-muted-foreground w-40">
+                                Field
+                              </th>
+                              <th className="pb-2 font-medium text-muted-foreground">Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {result.structured.map((f, i) => (
+                              <tr key={i} className="border-b last:border-0">
+                                <td className="py-2.5 pr-6 font-medium text-muted-foreground">
+                                  {f.label}
+                                </td>
+                                <td className="py-2.5 font-mono text-[13px]">{f.value}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="annotated">
                 <Card>
@@ -433,7 +631,7 @@ export default function DocumentsPage() {
                 <Card>
                   <CardContent className="p-5">
                     {result.entities.length === 0 ? (
-                      <p className="text-[13px] text-muted-foreground py-4 text-center">
+                      <p className="py-4 text-center text-[13px] text-muted-foreground">
                         No entities detected.
                       </p>
                     ) : (
@@ -479,20 +677,10 @@ export default function DocumentsPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-
-              <TabsContent value="raw">
-                <Card>
-                  <CardContent className="p-5">
-                    <pre className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed">
-                      {result.text}
-                    </pre>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
 
             {/* API callout */}
-            <Card className="bg-muted/30 border-dashed">
+            <Card className="border-dashed bg-muted/30">
               <CardContent className="flex items-center justify-between py-4">
                 <div>
                   <p className="text-[13px] font-medium">Need PDF, DOCX, or image processing?</p>
