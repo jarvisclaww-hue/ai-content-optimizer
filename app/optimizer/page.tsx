@@ -15,23 +15,19 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
-  Brain,
-  Zap,
-  Target,
+  ArrowLeft,
   BarChart,
+  CheckCircle,
   Copy,
   Download,
-  Wand2,
-  Sparkles,
-  CheckCircle,
-  TrendingUp,
   FileText,
-  Settings,
   RefreshCw,
+  Settings,
+  TrendingUp,
 } from 'lucide-react';
 import { aiContentService, type OptimizationGoals, type ContentMetrics } from '@/lib/ai-service';
+import Link from 'next/link';
 
 interface OptimizationResult {
   optimizedContent: string;
@@ -52,13 +48,19 @@ interface OptimizationResult {
   suggestions: string[];
 }
 
+const sampleContent = `Content optimization is becoming important in digital publishing. With increasing competition for reader attention, ensuring that text is clear, well-structured, and suited to its audience is essential.
+
+However, many teams struggle with balancing SEO requirements against readability. Common issues include overly complex sentences, inconsistent tone, and missed keyword opportunities.
+
+This is where structured analysis helps. By scoring content across multiple dimensions — readability, keyword usage, tone consistency, and grammar — writers can make targeted improvements rather than guessing.`;
+
 export default function OptimizerPage() {
-  const [content, setContent] = useState<string>('');
-  const [optimizedContent, setOptimizedContent] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
+  const [content, setContent] = useState('');
+  const [optimizedContent, setOptimizedContent] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<OptimizationResult | null>(null);
   const [analysis, setAnalysis] = useState<ContentMetrics | null>(null);
-  const [optimizationGoals, setOptimizationGoals] = useState<OptimizationGoals>({
+  const [goals, setGoals] = useState<OptimizationGoals>({
     improveReadability: true,
     improveSEO: true,
     adjustTone: 'neutral',
@@ -67,385 +69,287 @@ export default function OptimizerPage() {
     wordCountTarget: 0,
   });
 
-  const sampleContent = `AI content optimization is becoming increasingly important in today's digital landscape. With the rise of AI-generated content, it's crucial to ensure that your content stands out and engages your audience effectively.
+  const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
 
-However, many businesses struggle with creating content that is both SEO-friendly and readable. This is where AI content optimization tools come in handy. They can analyze your content and provide suggestions for improvement, helping you create better content faster.
-
-Some common issues with content include poor readability, lack of SEO optimization, and inconsistent tone. These issues can be addressed with the right tools and strategies.`;
-
-  const handleAnalyze = async () => {
-    if (!content.trim()) {
-      alert('Please enter some content to analyze');
-      return;
-    }
-
-    setIsLoading(true);
+  const analyse = async () => {
+    if (!content.trim()) return;
+    setLoading(true);
     try {
-      const result = await aiContentService.analyzeContent(content);
-      setAnalysis(result.analysis);
-    } catch (error) {
-      console.error('Analysis error:', error);
-      alert('Failed to analyze content. Please try again.');
+      const r = await aiContentService.analyzeContent(content);
+      setAnalysis(r.analysis);
+    } catch {
+      alert('Analysis failed. Check that the API key is configured.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleOptimize = async () => {
-    if (!content.trim()) {
-      alert('Please enter some content to optimize');
-      return;
-    }
-
-    setIsLoading(true);
+  const optimise = async () => {
+    if (!content.trim()) return;
+    setLoading(true);
     try {
-      const result = await aiContentService.optimizeContent(content, optimizationGoals);
-      setOptimizedContent(result.optimizedContent);
-      setOptimizationResult(result);
-    } catch (error) {
-      console.error('Optimization error:', error);
-      alert('Failed to optimize content. Please try again.');
+      const r = await aiContentService.optimizeContent(content, goals);
+      setOptimizedContent(r.optimizedContent);
+      setResult(r);
+    } catch {
+      alert('Optimisation failed. Check that the API key is configured.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleLoadSample = () => {
-    setContent(sampleContent);
-  };
-
-  const handleCopyOptimized = () => {
-    navigator.clipboard.writeText(optimizedContent);
-    alert('Optimized content copied to clipboard!');
-  };
-
-  const handleReset = () => {
-    setContent('');
-    setOptimizedContent('');
-    setOptimizationResult(null);
-    setAnalysis(null);
-  };
-
-  const getToneColor = (tone: string) => {
-    switch (tone) {
-      case 'formal':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'casual':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'persuasive':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-      case 'informative':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+  const exportMd = async () => {
+    try {
+      const blob = await aiContentService.exportContent(optimizedContent, 'markdown', {
+        title: 'Optimised Content',
+      });
+      if (blob instanceof Blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `optimised-${Date.now()}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      alert('Export failed.');
     }
   };
 
-  const getImprovementColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-amber-600 dark:text-amber-400';
-    return 'text-red-600 dark:text-red-400';
-  };
+  const scoreColor = (s: number) =>
+    s >= 80
+      ? 'text-green-700 dark:text-green-400'
+      : s >= 60
+        ? 'text-amber-700 dark:text-amber-400'
+        : 'text-red-700 dark:text-red-400';
+
+  const selectClass =
+    'w-full h-9 px-3 py-1 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <header className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Brain className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">AI Content Optimizer</h1>
-                <p className="text-muted-foreground">
-                  Enhance your content with AI-powered analysis and optimization
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleLoadSample} className="gap-2">
-                <FileText className="h-4 w-4" />
-                Load Sample
-              </Button>
-              <Button variant="outline" onClick={handleReset} className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Reset
-              </Button>
-            </div>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="border-b">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Back
+            </Link>
+            <div className="h-4 w-px bg-border" />
+            <h1 className="text-sm font-semibold">Content Optimizer</h1>
           </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setContent(sampleContent)}
+              disabled={loading}
+            >
+              <FileText className="mr-1.5 h-3.5 w-3.5" /> Sample
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setContent('');
+                setOptimizedContent('');
+                setResult(null);
+                setAnalysis(null);
+              }}
+              disabled={loading}
+            >
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Reset
+            </Button>
+          </div>
+        </div>
+      </header>
 
-          <Alert className="mb-6">
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>AI-Powered Content Enhancement</AlertTitle>
-            <AlertDescription>
-              This tool analyzes your content and provides AI-powered suggestions to improve
-              readability, SEO, tone, and grammar for better engagement.
-            </AlertDescription>
-          </Alert>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Input & Settings */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Content Input */}
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          {/* Left column */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Input */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Content Input
-                </CardTitle>
-                <CardDescription>
-                  Enter or paste your content for analysis and optimization
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Input</CardTitle>
+                <CardDescription className="text-[13px]">
+                  Paste or type the content you want analysed.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="content">Your Content</Label>
-                    <Textarea
-                      id="content"
-                      placeholder="Enter your content here..."
-                      value={content}
-                      onChange={e => setContent(e.target.value)}
-                      className="min-h-[200px] mt-2"
-                      disabled={isLoading}
-                    />
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-sm text-muted-foreground">
-                        {content.length} characters,{' '}
-                        {content.split(/\s+/).filter(w => w.length > 0).length} words
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleAnalyze}
-                        disabled={isLoading || !content.trim()}
-                        className="gap-2"
-                      >
-                        <BarChart className="h-4 w-4" />
-                        Analyze
-                      </Button>
-                    </div>
-                  </div>
+                <Textarea
+                  placeholder="Enter content here…"
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  className="min-h-[180px] text-sm"
+                  disabled={loading}
+                />
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-[12px] text-muted-foreground">
+                    {content.length.toLocaleString()} chars · {wordCount} words
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={analyse}
+                    disabled={loading || !content.trim()}
+                    className="h-7 text-xs"
+                  >
+                    <BarChart className="mr-1.5 h-3 w-3" /> Analyse
+                  </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Optimization Settings */}
+            {/* Settings */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Optimization Settings
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Settings className="h-4 w-4" /> Settings
                 </CardTitle>
-                <CardDescription>Configure how you want your content optimized</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-3">
+                  {[
+                    {
+                      id: 'readability',
+                      label: 'Improve readability',
+                      desc: 'Simpler sentences, better flow',
+                      key: 'improveReadability' as const,
+                    },
+                    {
+                      id: 'seo',
+                      label: 'Improve SEO',
+                      desc: 'Keywords, structure, density',
+                      key: 'improveSEO' as const,
+                    },
+                    {
+                      id: 'grammar',
+                      label: 'Fix grammar',
+                      desc: 'Spelling and grammar corrections',
+                      key: 'fixGrammar' as const,
+                    },
+                  ].map(opt => (
+                    <div key={opt.id} className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="readability" className="font-medium">
-                          Improve Readability
+                        <Label htmlFor={opt.id} className="text-sm font-medium">
+                          {opt.label}
                         </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Simplify sentence structure and improve flow
-                        </p>
+                        <p className="text-[12px] text-muted-foreground">{opt.desc}</p>
                       </div>
                       <Switch
-                        id="readability"
-                        checked={optimizationGoals.improveReadability}
-                        onCheckedChange={checked =>
-                          setOptimizationGoals({
-                            ...optimizationGoals,
-                            improveReadability: checked,
-                          })
-                        }
-                        disabled={isLoading}
+                        id={opt.id}
+                        checked={goals[opt.key] as boolean}
+                        onCheckedChange={v => setGoals({ ...goals, [opt.key]: v })}
+                        disabled={loading}
                       />
                     </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="seo" className="font-medium">
-                          Improve SEO
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Optimize for search engines and keyword usage
-                        </p>
-                      </div>
-                      <Switch
-                        id="seo"
-                        checked={optimizationGoals.improveSEO}
-                        onCheckedChange={checked =>
-                          setOptimizationGoals({ ...optimizationGoals, improveSEO: checked })
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="grammar" className="font-medium">
-                          Fix Grammar
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Correct spelling and grammar mistakes
-                        </p>
-                      </div>
-                      <Switch
-                        id="grammar"
-                        checked={optimizationGoals.fixGrammar}
-                        onCheckedChange={checked =>
-                          setOptimizationGoals({ ...optimizationGoals, fixGrammar: checked })
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
+                  ))}
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="tone" className="text-sm font-medium mb-1 block">
+                      Tone
+                    </Label>
+                    <select
+                      id="tone"
+                      className={selectClass}
+                      value={goals.adjustTone || 'neutral'}
+                      onChange={e =>
+                        setGoals({
+                          ...goals,
+                          adjustTone: e.target.value as typeof goals.adjustTone,
+                        })
+                      }
+                      disabled={loading}
+                    >
+                      <option value="neutral">Neutral</option>
+                      <option value="formal">Formal</option>
+                      <option value="casual">Casual</option>
+                      <option value="persuasive">Persuasive</option>
+                      <option value="informative">Informative</option>
+                    </select>
                   </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="tone" className="font-medium mb-2 block">
-                        Adjust Tone
-                      </Label>
-                      <select
-                        id="tone"
-                        className="w-full p-2 border rounded-md bg-background"
-                        value={optimizationGoals.adjustTone || 'neutral'}
-                        onChange={e =>
-                          setOptimizationGoals({
-                            ...optimizationGoals,
-                            adjustTone: e.target.value as
-                              | 'formal'
-                              | 'casual'
-                              | 'persuasive'
-                              | 'informative'
-                              | 'neutral',
-                          })
-                        }
-                        disabled={isLoading}
-                      >
-                        <option value="neutral">Neutral</option>
-                        <option value="formal">Formal</option>
-                        <option value="casual">Casual</option>
-                        <option value="persuasive">Persuasive</option>
-                        <option value="informative">Informative</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="audience" className="font-medium mb-2 block">
-                        Target Audience
-                      </Label>
-                      <select
-                        id="audience"
-                        className="w-full p-2 border rounded-md bg-background"
-                        value={optimizationGoals.targetAudience || 'general'}
-                        onChange={e =>
-                          setOptimizationGoals({
-                            ...optimizationGoals,
-                            targetAudience: e.target.value as
-                              | 'general'
-                              | 'technical'
-                              | 'business'
-                              | 'academic',
-                          })
-                        }
-                        disabled={isLoading}
-                      >
-                        <option value="general">General</option>
-                        <option value="technical">Technical</option>
-                        <option value="business">Business</option>
-                        <option value="academic">Academic</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="wordCount" className="font-medium mb-2 block">
-                        Word Count Target (0 = no target)
-                      </Label>
-                      <input
-                        id="wordCount"
-                        type="number"
-                        min="0"
-                        className="w-full p-2 border rounded-md bg-background"
-                        value={optimizationGoals.wordCountTarget || 0}
-                        onChange={e =>
-                          setOptimizationGoals({
-                            ...optimizationGoals,
-                            wordCountTarget: parseInt(e.target.value) || 0,
-                          })
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="audience" className="text-sm font-medium mb-1 block">
+                      Audience
+                    </Label>
+                    <select
+                      id="audience"
+                      className={selectClass}
+                      value={goals.targetAudience || 'general'}
+                      onChange={e =>
+                        setGoals({
+                          ...goals,
+                          targetAudience: e.target.value as typeof goals.targetAudience,
+                        })
+                      }
+                      disabled={loading}
+                    >
+                      <option value="general">General</option>
+                      <option value="technical">Technical</option>
+                      <option value="business">Business</option>
+                      <option value="academic">Academic</option>
+                    </select>
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
                 <Button
-                  onClick={handleOptimize}
-                  disabled={isLoading || !content.trim()}
-                  className="w-full gap-2"
-                  size="lg"
+                  onClick={optimise}
+                  disabled={loading || !content.trim()}
+                  className="w-full"
+                  size="sm"
                 >
-                  {isLoading ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Optimizing...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="h-5 w-5" />
-                      Optimize Content
-                    </>
-                  )}
+                  {loading ? 'Processing\u2026' : 'Optimise'}
                 </Button>
               </CardFooter>
             </Card>
 
-            {/* Optimized Output */}
+            {/* Output */}
             {optimizedContent && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
-                    Optimized Content
-                  </CardTitle>
-                  <CardDescription>
-                    AI-enhanced version of your content with improvements applied
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Result</CardTitle>
+                  <CardDescription className="text-[13px]">
+                    Revised content based on your settings.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <Textarea
-                      value={optimizedContent}
-                      readOnly
-                      className="min-h-[200px] bg-muted/50"
-                    />
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">
-                        {optimizedContent.length} characters,{' '}
-                        {optimizedContent.split(/\s+/).filter(w => w.length > 0).length} words
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleCopyOptimized}
-                          className="gap-2"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Copy
-                        </Button>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <Download className="h-4 w-4" />
-                          Export
-                        </Button>
-                      </div>
+                  <Textarea
+                    value={optimizedContent}
+                    readOnly
+                    className="min-h-[180px] bg-muted/40 text-sm"
+                  />
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[12px] text-muted-foreground">
+                      {optimizedContent.length.toLocaleString()} chars ·{' '}
+                      {optimizedContent.split(/\s+/).filter(w => w.length > 0).length} words
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(optimizedContent);
+                        }}
+                      >
+                        <Copy className="mr-1.5 h-3 w-3" /> Copy
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        onClick={exportMd}
+                      >
+                        <Download className="mr-1.5 h-3 w-3" /> Export
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -453,227 +357,153 @@ Some common issues with content include poor readability, lack of SEO optimizati
             )}
           </div>
 
-          {/* Right Column - Analysis & Results */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
+          {/* Right column */}
+          <div className="space-y-5">
+            {/* Quick stats */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart className="h-5 w-5" />
-                  Quick Stats
-                </CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Stats</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {content && (
-                  <>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Words</span>
-                        <span className="font-medium">
-                          {content.split(/\s+/).filter(w => w.length > 0).length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Characters</span>
-                        <span className="font-medium">{content.length}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Reading Time</span>
-                        <span className="font-medium">
-                          {aiContentService.calculateReadingTime(content)} min
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Complexity Score</span>
-                        <span className="font-medium">
-                          {aiContentService.calculateComplexityScore(content)}/100
-                        </span>
-                      </div>
+              <CardContent>
+                {content ? (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Words</span>
+                      <span className="font-medium">{wordCount}</span>
                     </div>
-                  </>
-                )}
-                {!content && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Enter content to see analysis</p>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Characters</span>
+                      <span className="font-medium">{content.length.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Reading time</span>
+                      <span className="font-medium">
+                        {aiContentService.calculateReadingTime(content)} min
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Complexity</span>
+                      <span className="font-medium">
+                        {aiContentService.calculateComplexityScore(content)}/100
+                      </span>
+                    </div>
                   </div>
+                ) : (
+                  <p className="py-6 text-center text-[13px] text-muted-foreground">
+                    Enter content to see stats.
+                  </p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Analysis Results */}
+            {/* Analysis */}
             {analysis && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Content Analysis
-                  </CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Analysis</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
                   <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">Overall Score</span>
-                      <span className={`font-bold ${getImprovementColor(analysis.overallScore)}`}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Overall</span>
+                      <span className={`font-medium ${scoreColor(analysis.overallScore)}`}>
                         {analysis.overallScore}/100
                       </span>
                     </div>
-                    <Progress value={analysis.overallScore} className="h-2" />
+                    <Progress value={analysis.overallScore} className="h-1.5" />
                   </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Readability</span>
-                        <span className="text-sm font-medium">
-                          {analysis.readability.score}/100
-                        </span>
+                  {[
+                    {
+                      label: 'Readability',
+                      score: analysis.readability.score,
+                      detail: `${analysis.readability.gradeLevel} · ${analysis.readability.readingEase}`,
+                    },
+                    {
+                      label: 'SEO',
+                      score: analysis.seo.score,
+                      detail: `${Object.keys(analysis.seo.keywordDensity).length} keywords found`,
+                    },
+                    {
+                      label: 'Grammar',
+                      score: analysis.grammar.score,
+                      detail: `${analysis.grammar.totalIssues} issue${analysis.grammar.totalIssues === 1 ? '' : 's'}`,
+                    },
+                  ].map((m, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between text-[13px] mb-0.5">
+                        <span>{m.label}</span>
+                        <span className="font-medium">{m.score}/100</span>
                       </div>
-                      <Progress value={analysis.readability.score} className="h-1" />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {analysis.readability.gradeLevel} level • {analysis.readability.readingEase}
-                      </p>
+                      <Progress value={m.score} className="h-1" />
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{m.detail}</p>
                     </div>
-
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">SEO Score</span>
-                        <span className="text-sm font-medium">{analysis.seo.score}/100</span>
-                      </div>
-                      <Progress value={analysis.seo.score} className="h-1" />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {Object.keys(analysis.seo.keywordDensity).length} keywords detected
-                      </p>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Grammar</span>
-                        <span className="text-sm font-medium">{analysis.grammar.score}/100</span>
-                      </div>
-                      <Progress value={analysis.grammar.score} className="h-1" />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {analysis.grammar.totalIssues} issues found
-                      </p>
-                    </div>
-                  </div>
-
+                  ))}
                   <div>
-                    <span className="text-sm font-medium block mb-2">Tone Analysis</span>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge className={getToneColor(analysis.tone.primaryTone)}>
+                    <span className="text-[13px]">Tone</span>
+                    <div className="mt-1">
+                      <Badge variant="secondary" className="text-[11px]">
                         {analysis.tone.primaryTone}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {analysis.tone.confidence}% confidence
-                      </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Optimization Results */}
-            {optimizationResult && (
+            {/* Optimisation results */}
+            {result && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Optimization Results
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" /> Improvements
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
+                <CardContent className="space-y-3">
+                  {[
+                    { label: 'Overall', val: result.summary.overallImprovement },
+                    { label: 'Readability', val: result.summary.readabilityImprovement },
+                    { label: 'SEO', val: result.summary.seoImprovement },
+                    { label: 'Grammar', val: result.summary.grammarImprovement },
+                  ]
+                    .filter(m => m.val > 0)
+                    .map((m, i) => (
+                      <div key={i}>
+                        <div className="flex justify-between text-[13px] mb-0.5">
+                          <span>{m.label}</span>
+                          <span className="font-medium text-green-700 dark:text-green-400">
+                            +{m.val}%
+                          </span>
+                        </div>
+                        <Progress value={m.val} className="h-1" />
+                      </div>
+                    ))}
+                  {result.changes.length > 0 && (
                     <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Overall Improvement</span>
-                        <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                          +{optimizationResult.summary.overallImprovement}%
-                        </span>
-                      </div>
-                      <Progress
-                        value={optimizationResult.summary.overallImprovement}
-                        className="h-2"
-                      />
-                    </div>
-
-                    {optimizationResult.summary.readabilityImprovement > 0 && (
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Readability</span>
-                          <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                            +{optimizationResult.summary.readabilityImprovement}%
-                          </span>
-                        </div>
-                        <Progress
-                          value={optimizationResult.summary.readabilityImprovement}
-                          className="h-1"
-                        />
-                      </div>
-                    )}
-
-                    {optimizationResult.summary.seoImprovement > 0 && (
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">SEO</span>
-                          <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                            +{optimizationResult.summary.seoImprovement}%
-                          </span>
-                        </div>
-                        <Progress
-                          value={optimizationResult.summary.seoImprovement}
-                          className="h-1"
-                        />
-                      </div>
-                    )}
-
-                    {optimizationResult.summary.grammarImprovement > 0 && (
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Grammar</span>
-                          <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                            +{optimizationResult.summary.grammarImprovement}%
-                          </span>
-                        </div>
-                        <Progress
-                          value={optimizationResult.summary.grammarImprovement}
-                          className="h-1"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {optimizationResult.changes.length > 0 && (
-                    <div>
-                      <span className="text-sm font-medium block mb-2">
-                        Changes Applied ({optimizationResult.changes.length})
-                      </span>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {optimizationResult.changes.slice(0, 3).map((change, index) => (
-                          <div key={index} className="text-xs p-2 bg-muted rounded">
-                            <div className="font-medium">{change.description}</div>
-                            <div className="text-muted-foreground">
-                              Confidence: {change.confidence}%
-                            </div>
+                      <p className="text-[13px] font-medium mb-1.5">
+                        Changes ({result.changes.length})
+                      </p>
+                      <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                        {result.changes.slice(0, 4).map((c, i) => (
+                          <div key={i} className="rounded bg-muted px-2.5 py-1.5 text-[12px]">
+                            <span className="font-medium">{c.description}</span>
                           </div>
                         ))}
-                        {optimizationResult.changes.length > 3 && (
-                          <div className="text-xs text-center text-muted-foreground">
-                            +{optimizationResult.changes.length - 3} more changes
-                          </div>
+                        {result.changes.length > 4 && (
+                          <p className="text-[11px] text-muted-foreground text-center">
+                            +{result.changes.length - 4} more
+                          </p>
                         )}
                       </div>
                     </div>
                   )}
-
-                  {optimizationResult.suggestions.length > 0 && (
+                  {result.suggestions.length > 0 && (
                     <div>
-                      <span className="text-sm font-medium block mb-2">Suggestions</span>
-                      <ul className="space-y-1 text-xs">
-                        {optimizationResult.suggestions.slice(0, 3).map((suggestion, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span>{suggestion}</span>
+                      <p className="text-[13px] font-medium mb-1.5">Suggestions</p>
+                      <ul className="space-y-1">
+                        {result.suggestions.slice(0, 3).map((s, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-[12px]">
+                            <CheckCircle className="h-3 w-3 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                            {s}
                           </li>
                         ))}
                       </ul>
@@ -682,58 +512,8 @@ Some common issues with content include poor readability, lack of SEO optimizati
                 </CardContent>
               </Card>
             )}
-
-            {/* Features */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Features
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded">
-                    <Brain className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">AI-Powered Analysis</p>
-                    <p className="text-xs text-muted-foreground">
-                      Advanced content analysis using machine learning
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded">
-                    <Target className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">SEO Optimization</p>
-                    <p className="text-xs text-muted-foreground">
-                      Improve search engine visibility and ranking
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded">
-                    <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Tone Adjustment</p>
-                    <p className="text-xs text-muted-foreground">
-                      Match content tone to your target audience
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
-
-        <footer className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>AI Content Optimizer • Part of PRIA AI Development Services</p>
-          <p className="mt-1">Professional content optimization powered by AI technology</p>
-        </footer>
       </div>
     </div>
   );

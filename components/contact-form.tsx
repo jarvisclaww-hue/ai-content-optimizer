@@ -6,8 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, Loader2, Send } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 
 interface FormData {
@@ -19,7 +17,7 @@ interface FormData {
   message: string;
 }
 
-const initialForm: FormData = {
+const blank: FormData = {
   name: '',
   email: '',
   projectType: '',
@@ -28,62 +26,60 @@ const initialForm: FormData = {
   message: '',
 };
 
+const selectClass =
+  'w-full h-9 px-3 py-1 rounded-md border bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50';
+
 export default function ContactForm() {
-  const [form, setForm] = useState<FormData>(initialForm);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState<FormData>(blank);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const set = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsSubmitting(true);
-
+    setBusy(true);
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to submit. Please try again.');
+        const d = await res.json();
+        throw new Error(d.error || 'Submission failed.');
       }
-
       trackEvent('form_submit', 'contact', form.projectType);
-      setSubmitted(true);
-      setForm(initialForm);
+      setDone(true);
+      setForm(blank);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
-      setIsSubmitting(false);
+      setBusy(false);
     }
   };
 
-  if (submitted) {
+  if (done) {
     return (
-      <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
-        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-        <AlertTitle className="text-green-800 dark:text-green-300">Message received!</AlertTitle>
-        <AlertDescription className="text-green-700 dark:text-green-400">
-          Thanks for reaching out. We&apos;ll review your project details and reply within 24 hours.
-        </AlertDescription>
-      </Alert>
+      <Card>
+        <CardContent className="py-10 text-center">
+          <p className="font-medium mb-1">Message received.</p>
+          <p className="text-sm text-muted-foreground">
+            We&apos;ll review your project and reply within 24 hours.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <Card>
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -91,9 +87,9 @@ export default function ContactForm() {
                 name="name"
                 placeholder="Your name"
                 value={form.name}
-                onChange={handleChange}
+                onChange={set}
                 required
-                disabled={isSubmitting}
+                disabled={busy}
               />
             </div>
             <div className="space-y-1.5">
@@ -104,51 +100,49 @@ export default function ContactForm() {
                 type="email"
                 placeholder="you@company.com"
                 value={form.email}
-                onChange={handleChange}
+                onChange={set}
                 required
-                disabled={isSubmitting}
+                disabled={busy}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="projectType">Project type *</Label>
+            <Label htmlFor="projectType">Service *</Label>
             <select
               id="projectType"
               name="projectType"
-              className="w-full h-9 px-3 py-1 rounded-md border bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+              className={selectClass}
               value={form.projectType}
-              onChange={handleChange}
+              onChange={set}
               required
-              disabled={isSubmitting}
+              disabled={busy}
             >
-              <option value="">Select a service...</option>
-              <option value="ai-content-optimizer">AI Content Optimizer</option>
-              <option value="document-intelligence">Document Intelligence API</option>
-              <option value="custom-ai-agent">Custom AI Agent</option>
-              <option value="llm-integration">LLM / API Integration</option>
-              <option value="workflow-automation">Workflow Automation</option>
+              <option value="">Select&hellip;</option>
+              <option value="content-optimization">Content Optimization</option>
+              <option value="document-intelligence">Document Intelligence</option>
+              <option value="custom-development">Custom Development</option>
               <option value="other">Other</option>
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="budget">Budget range</Label>
+              <Label htmlFor="budget">Budget</Label>
               <select
                 id="budget"
                 name="budget"
-                className="w-full h-9 px-3 py-1 rounded-md border bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+                className={selectClass}
                 value={form.budget}
-                onChange={handleChange}
-                disabled={isSubmitting}
+                onChange={set}
+                disabled={busy}
               >
-                <option value="">Select budget...</option>
-                <option value="under-500">Under $500</option>
-                <option value="500-2000">$500 – $2,000</option>
-                <option value="2000-10000">$2,000 – $10,000</option>
-                <option value="10000-25000">$10,000 – $25,000</option>
-                <option value="25000+">$25,000+</option>
+                <option value="">Select&hellip;</option>
+                <option value="under-500">&lt; $500</option>
+                <option value="500-2000">$500 – $2k</option>
+                <option value="2000-10000">$2k – $10k</option>
+                <option value="10000-25000">$10k – $25k</option>
+                <option value="25000+">$25k+</option>
               </select>
             </div>
             <div className="space-y-1.5">
@@ -156,16 +150,15 @@ export default function ContactForm() {
               <select
                 id="timeline"
                 name="timeline"
-                className="w-full h-9 px-3 py-1 rounded-md border bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+                className={selectClass}
                 value={form.timeline}
-                onChange={handleChange}
-                disabled={isSubmitting}
+                onChange={set}
+                disabled={busy}
               >
-                <option value="">Select timeline...</option>
-                <option value="asap">ASAP (rush)</option>
+                <option value="">Select&hellip;</option>
+                <option value="asap">ASAP</option>
                 <option value="1-2-weeks">1–2 weeks</option>
                 <option value="1-month">~1 month</option>
-                <option value="2-3-months">2–3 months</option>
                 <option value="flexible">Flexible</option>
               </select>
             </div>
@@ -176,38 +169,23 @@ export default function ContactForm() {
             <Textarea
               id="message"
               name="message"
-              placeholder="Describe what you're building, what problem it solves, and any technical context..."
+              placeholder="What are you building and what problem does it solve?"
               value={form.message}
-              onChange={handleChange}
+              onChange={set}
               required
-              disabled={isSubmitting}
-              className="min-h-[120px] resize-none"
+              disabled={busy}
+              className="min-h-[100px] resize-none"
             />
           </div>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" className="w-full gap-2" size="lg" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Send Message
-              </>
-            )}
+          <Button type="submit" className="w-full" size="sm" disabled={busy}>
+            {busy ? 'Sending\u2026' : 'Send message'}
           </Button>
 
-          <p className="text-xs text-center text-muted-foreground">
-            We reply within 24 hours. No spam, no pressure.
+          <p className="text-center text-[12px] text-muted-foreground">
+            We reply within 24 hours. No spam.
           </p>
         </form>
       </CardContent>

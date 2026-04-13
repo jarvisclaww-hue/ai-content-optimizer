@@ -16,50 +16,34 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://ai-content-optimizer-pi.vercel.app'),
   title: {
-    default: 'PRIA — AI Development Services',
+    default: 'PRIA — Software engineering for teams that use AI',
     template: '%s | PRIA',
   },
   description:
-    'Professional AI development services: document intelligence, content optimization, and custom AI agent development. Fast delivery, production-ready code.',
+    'Document processing APIs, content analysis tools, and custom integrations. Production code, shipped fast.',
   keywords: [
-    'AI development',
-    'AI integration',
-    'document intelligence',
+    'software engineering',
+    'document processing',
     'content optimization',
-    'custom AI agents',
-    'automation',
-    'machine learning',
+    'API development',
+    'custom integrations',
   ],
   authors: [{ name: 'PRIA' }],
-  creator: 'PRIA',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://ai-content-optimizer-pi.vercel.app',
     siteName: 'PRIA',
-    title: 'PRIA — AI Development Services',
+    title: 'PRIA — Software engineering for teams that use AI',
     description:
-      'Professional AI development services: document intelligence, content optimization, and custom AI agent development.',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'PRIA — AI Development Services',
-      },
-    ],
+      'Document processing APIs, content analysis tools, and custom integrations. Production code, shipped fast.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PRIA — AI Development Services',
-    description:
-      'Professional AI development services: document intelligence, content optimization, and custom AI agents.',
-    images: ['/og-image.png'],
+    title: 'PRIA — Software engineering for teams that use AI',
+    description: 'Document processing APIs, content analysis tools, and custom integrations.',
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 const jsonLd = {
@@ -67,40 +51,10 @@ const jsonLd = {
   '@type': 'ProfessionalService',
   name: 'PRIA',
   description:
-    'Professional AI development services including document intelligence, content optimization, and custom AI agent development.',
+    'Software engineering services: document processing, content analysis, and custom integrations.',
   url: 'https://ai-content-optimizer-pi.vercel.app',
-  serviceType: 'AI Development Services',
+  serviceType: 'Software Engineering',
   areaServed: 'Worldwide',
-  hasOfferCatalog: {
-    '@type': 'OfferCatalog',
-    name: 'AI Development Services',
-    itemListElement: [
-      {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Service',
-          name: 'AI Content Optimizer',
-          description: 'AI-powered content analysis and optimization for SEO and readability',
-        },
-      },
-      {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Service',
-          name: 'Document Intelligence API',
-          description: 'Automated document processing, extraction, and classification',
-        },
-      },
-      {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Service',
-          name: 'Custom AI Development',
-          description: 'Bespoke AI agents, integrations, and automation solutions',
-        },
-      },
-    ],
-  },
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -126,13 +80,8 @@ export default function RootLayout({
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="afterInteractive"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_ID}', { page_path: window.location.pathname });
-              `}
+            <Script id="ga" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{page_path:window.location.pathname});`}
             </Script>
           </>
         )}
