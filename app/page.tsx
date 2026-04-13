@@ -49,7 +49,7 @@ const services = [
       'Multi-tenant API with JWT auth',
     ],
     badge: 'API',
-    demoUrl: 'https://document-intelligence-api-production.up.railway.app/health',
+    demoUrl: '/documents',
     gradient: 'from-zinc-500/10 to-stone-500/10',
     iconBg: 'bg-zinc-100 dark:bg-zinc-800',
     iconColor: 'text-zinc-700 dark:text-zinc-300',
@@ -334,15 +334,15 @@ export default function Home() {
             <Card className="overflow-hidden">
               <div className="h-1 bg-foreground/10" />
               <CardHeader>
-                <CardTitle className="text-lg">Document Intelligence API</CardTitle>
+                <CardTitle className="text-lg">Document Intelligence</CardTitle>
                 <CardDescription>
-                  Node.js &middot; Express &middot; PostgreSQL &middot; Prisma
+                  Entity extraction &middot; Text analysis &middot; Structured output
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-[13px] text-muted-foreground mb-4 leading-relaxed">
-                  REST API for document upload, OCR, entity extraction, and structured output. JWT
-                  auth, rate limiting, async processing with status polling.
+                  Drop a document, get structured data back. Extracts text, recognises people,
+                  organisations, dates, and money amounts. Try it with the interactive demo.
                 </p>
                 <div className="flex flex-wrap gap-1.5 mb-5">
                   {['Node.js', 'TypeScript', 'PostgreSQL', 'Prisma', 'Tesseract.js'].map(t => (
@@ -351,16 +351,12 @@ export default function Home() {
                     </Badge>
                   ))}
                 </div>
-                <a
-                  href="https://document-intelligence-api-production.up.railway.app/health"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href="/documents">
                   <Button variant="outline" className="w-full" size="sm">
-                    View API health
+                    Try demo
                     <ArrowRight className="ml-2 h-3.5 w-3.5" />
                   </Button>
-                </a>
+                </Link>
               </CardContent>
             </Card>
           </div>
@@ -478,14 +474,9 @@ export default function Home() {
             <Link href="/optimizer" className="hover:text-foreground transition-colors">
               Content Optimizer
             </Link>
-            <a
-              href="https://document-intelligence-api-production.up.railway.app/health"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              Doc Intel API
-            </a>
+            <Link href="/documents" className="hover:text-foreground transition-colors">
+              Doc Intel
+            </Link>
             <Link href="#contact" className="hover:text-foreground transition-colors">
               Contact
             </Link>
