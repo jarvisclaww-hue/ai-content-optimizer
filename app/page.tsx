@@ -17,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
+import ThemeToggle from '@/components/theme-toggle';
 
 const services = [
   {
@@ -188,11 +189,14 @@ export default function Home() {
               Contact
             </Link>
           </div>
-          <Link href="#contact">
-            <Button size="sm" variant="default">
-              Get in touch
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link href="#contact">
+              <Button size="sm" variant="default">
+                Get in touch
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 

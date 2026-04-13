@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,10 +15,13 @@ import {
   Copy,
   Download,
   FileText,
+  Globe,
+  Loader2,
   RefreshCw,
 } from 'lucide-react';
 import { aiContentService, type OptimizationGoals, type ContentMetrics } from '@/lib/ai-service';
 import Link from 'next/link';
+import ThemeToggle from '@/components/theme-toggle';
 
 interface OptimizationResult {
   optimizedContent: string;
@@ -52,6 +56,10 @@ export default function OptimizerPage() {
   const [result, setResult] = useState<OptimizationResult | null>(null);
   const [analysis, setAnalysis] = useState<ContentMetrics | null>(null);
   const [copied, setCopied] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [urlSource, setUrlSource] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [goals, setGoals] = useState<OptimizationGoals>({
     improveReadability: true,
     improveSEO: true,
@@ -63,6 +71,32 @@ export default function OptimizerPage() {
 
   const wc = (t: string) => t.split(/\s+/).filter(w => w.length > 0).length;
   const wordCount = wc(content);
+
+  const fetchUrl = async () => {
+    if (!urlInput.trim()) return;
+    setUrlLoading(true);
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: urlInput.trim().startsWith('http') ? urlInput.trim() : `https://${urlInput.trim()}`,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Failed to fetch URL');
+      }
+      const data = await res.json();
+      setContent(data.content);
+      setUrlSource(data.title || data.url);
+      setInputMode('text');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to fetch URL');
+    } finally {
+      setUrlLoading(false);
+    }
+  };
 
   const analyse = async () => {
     if (!content.trim()) return;
@@ -126,6 +160,9 @@ export default function OptimizerPage() {
     setOptimized('');
     setResult(null);
     setAnalysis(null);
+    setUrlInput('');
+    setUrlSource(null);
+    setInputMode('text');
   };
 
   const scoreColor = (s: number) =>
@@ -174,6 +211,7 @@ export default function OptimizerPage() {
               <RefreshCw className="mr-1 h-3 w-3" />
               Reset
             </Button>
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -261,20 +299,62 @@ export default function OptimizerPage() {
         {/* Left — Input */}
         <div className="flex flex-1 flex-col">
           <div className="flex items-center justify-between border-b px-4 py-2">
-            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
-              Input
-            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setInputMode('text')}
+                className={`text-[12px] font-medium uppercase tracking-wider transition-colors ${inputMode === 'text' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Text
+              </button>
+              <button
+                onClick={() => setInputMode('url')}
+                className={`flex items-center gap-1 text-[12px] font-medium uppercase tracking-wider transition-colors ${inputMode === 'url' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <Globe className="h-3 w-3" />
+                URL
+              </button>
+            </div>
             <span className="text-[12px] text-muted-foreground">
+              {urlSource && <span className="mr-2">{urlSource}</span>}
               {wordCount} words &middot; {content.length.toLocaleString()} chars
             </span>
           </div>
-          <Textarea
-            placeholder="Paste or type your content here..."
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            disabled={loading}
-            className="flex-1 resize-none rounded-none border-0 p-4 text-[14px] leading-relaxed focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[400px]"
-          />
+          {inputMode === 'url' ? (
+            <div className="flex flex-col items-center justify-center flex-1 p-8 gap-3">
+              <p className="text-[13px] text-muted-foreground mb-2">
+                Enter a URL to extract and analyse its content
+              </p>
+              <div className="flex w-full max-w-md gap-2">
+                <Input
+                  placeholder="https://example.com/blog-post"
+                  value={urlInput}
+                  onChange={e => setUrlInput(e.target.value)}
+                  disabled={urlLoading}
+                  onKeyDown={e => e.key === 'Enter' && fetchUrl()}
+                  className="text-sm"
+                />
+                <Button
+                  size="sm"
+                  onClick={fetchUrl}
+                  disabled={urlLoading || !urlInput.trim()}
+                  className="shrink-0"
+                >
+                  {urlLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Fetch'}
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Extracts visible text content from the page
+              </p>
+            </div>
+          ) : (
+            <Textarea
+              placeholder="Paste or type your content here..."
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              disabled={loading}
+              className="flex-1 resize-none rounded-none border-0 p-4 text-[14px] leading-relaxed focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[400px]"
+            />
+          )}
         </div>
 
         {/* Right — Output */}

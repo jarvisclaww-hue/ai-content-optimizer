@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Clock, FileText, Upload, X } from 'lucide-react';
 import Link from 'next/link';
+import ThemeToggle from '@/components/theme-toggle';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -266,12 +267,15 @@ export default function DocumentsPage() {
             <span className="text-border">/</span>
             <span className="text-[13px] font-medium">Document Intelligence</span>
           </div>
-          {result && (
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={reset}>
-              <X className="mr-1 h-3 w-3" />
-              Clear
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {result && (
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={reset}>
+                <X className="mr-1 h-3 w-3" />
+                Clear
+              </Button>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
