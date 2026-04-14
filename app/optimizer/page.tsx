@@ -79,9 +79,7 @@ export default function OptimizerPage() {
       const res = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: urlInput.trim().startsWith('http') ? urlInput.trim() : `https://${urlInput.trim()}`,
-        }),
+        body: JSON.stringify({ url: urlInput.trim().startsWith('http') ? urlInput.trim() : `https://${urlInput.trim()}` }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -137,9 +135,7 @@ export default function OptimizerPage() {
 
   const exportMd = async () => {
     try {
-      const blob = await aiContentService.exportContent(optimized, 'markdown', {
-        title: 'Optimised Content',
-      });
+      const blob = await aiContentService.exportContent(optimized, 'markdown', { title: 'Optimised Content' });
       if (blob instanceof Blob) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -180,36 +176,18 @@ export default function OptimizerPage() {
       <header className="border-b">
         <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              PRIA
+            <Link href="/" className="flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-3.5 w-3.5" />PRIA
             </Link>
             <span className="text-border">/</span>
             <span className="text-[13px] font-medium">Content Optimizer</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs"
-              onClick={() => setContent(sample)}
-              disabled={loading}
-            >
-              <FileText className="mr-1 h-3 w-3" />
-              Sample
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setContent(sample)} disabled={loading}>
+              <FileText className="mr-1 h-3 w-3" />Sample
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs"
-              onClick={reset}
-              disabled={loading}
-            >
-              <RefreshCw className="mr-1 h-3 w-3" />
-              Reset
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={reset} disabled={loading}>
+              <RefreshCw className="mr-1 h-3 w-3" />Reset
             </Button>
             <ThemeToggle />
           </div>
@@ -237,14 +215,7 @@ export default function OptimizerPage() {
           ))}
           <div className="flex items-center gap-1.5 text-[13px]">
             <span className="text-muted-foreground">Tone</span>
-            <select
-              className={sel}
-              value={goals.adjustTone || 'neutral'}
-              onChange={e =>
-                setGoals({ ...goals, adjustTone: e.target.value as typeof goals.adjustTone })
-              }
-              disabled={loading}
-            >
+            <select className={sel} value={goals.adjustTone || 'neutral'} onChange={e => setGoals({ ...goals, adjustTone: e.target.value as typeof goals.adjustTone })} disabled={loading}>
               <option value="neutral">Neutral</option>
               <option value="formal">Formal</option>
               <option value="casual">Casual</option>
@@ -254,17 +225,7 @@ export default function OptimizerPage() {
           </div>
           <div className="flex items-center gap-1.5 text-[13px]">
             <span className="text-muted-foreground">Audience</span>
-            <select
-              className={sel}
-              value={goals.targetAudience || 'general'}
-              onChange={e =>
-                setGoals({
-                  ...goals,
-                  targetAudience: e.target.value as typeof goals.targetAudience,
-                })
-              }
-              disabled={loading}
-            >
+            <select className={sel} value={goals.targetAudience || 'general'} onChange={e => setGoals({ ...goals, targetAudience: e.target.value as typeof goals.targetAudience })} disabled={loading}>
               <option value="general">General</option>
               <option value="technical">Technical</option>
               <option value="business">Business</option>
@@ -272,21 +233,10 @@ export default function OptimizerPage() {
             </select>
           </div>
           <div className="ml-auto flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={analyse}
-              disabled={loading || !content.trim()}
-            >
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={analyse} disabled={loading || !content.trim()}>
               {loading && action === 'analyse' ? 'Analysing\u2026' : 'Analyse'}
             </Button>
-            <Button
-              size="sm"
-              className="h-7 text-xs"
-              onClick={optimise}
-              disabled={loading || !content.trim()}
-            >
+            <Button size="sm" className="h-7 text-xs" onClick={optimise} disabled={loading || !content.trim()}>
               {loading && action === 'optimise' ? 'Optimising\u2026' : 'Optimise'}
               {!loading && <ArrowRight className="ml-1 h-3 w-3" />}
             </Button>
@@ -300,18 +250,9 @@ export default function OptimizerPage() {
         <div className="flex flex-1 flex-col">
           <div className="flex items-center justify-between border-b px-4 py-2">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setInputMode('text')}
-                className={`text-[12px] font-medium uppercase tracking-wider transition-colors ${inputMode === 'text' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                Text
-              </button>
-              <button
-                onClick={() => setInputMode('url')}
-                className={`flex items-center gap-1 text-[12px] font-medium uppercase tracking-wider transition-colors ${inputMode === 'url' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <Globe className="h-3 w-3" />
-                URL
+              <button onClick={() => setInputMode('text')} className={`text-[12px] font-medium uppercase tracking-wider transition-colors ${inputMode === 'text' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>Text</button>
+              <button onClick={() => setInputMode('url')} className={`flex items-center gap-1 text-[12px] font-medium uppercase tracking-wider transition-colors ${inputMode === 'url' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                <Globe className="h-3 w-3" />URL
               </button>
             </div>
             <span className="text-[12px] text-muted-foreground">
@@ -321,9 +262,7 @@ export default function OptimizerPage() {
           </div>
           {inputMode === 'url' ? (
             <div className="flex flex-col items-center justify-center flex-1 p-8 gap-3">
-              <p className="text-[13px] text-muted-foreground mb-2">
-                Enter a URL to extract and analyse its content
-              </p>
+              <p className="text-[13px] text-muted-foreground mb-2">Enter a URL to extract and analyse its content</p>
               <div className="flex w-full max-w-md gap-2">
                 <Input
                   placeholder="https://example.com/blog-post"
@@ -333,18 +272,11 @@ export default function OptimizerPage() {
                   onKeyDown={e => e.key === 'Enter' && fetchUrl()}
                   className="text-sm"
                 />
-                <Button
-                  size="sm"
-                  onClick={fetchUrl}
-                  disabled={urlLoading || !urlInput.trim()}
-                  className="shrink-0"
-                >
+                <Button size="sm" onClick={fetchUrl} disabled={urlLoading || !urlInput.trim()} className="shrink-0">
                   {urlLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Fetch'}
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Extracts visible text content from the page
-              </p>
+              <p className="text-[11px] text-muted-foreground">Extracts visible text content from the page</p>
             </div>
           ) : (
             <Textarea
@@ -360,23 +292,14 @@ export default function OptimizerPage() {
         {/* Right — Output */}
         <div className="flex flex-1 flex-col">
           <div className="flex items-center justify-between border-b px-4 py-2">
-            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
-              Output
-            </span>
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Output</span>
             {optimized && (
               <div className="flex gap-1.5">
                 <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={copy}>
-                  <Copy className="mr-1 h-3 w-3" />
-                  {copied ? 'Copied' : 'Copy'}
+                  <Copy className="mr-1 h-3 w-3" />{copied ? 'Copied' : 'Copy'}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 text-[11px] px-2"
-                  onClick={exportMd}
-                >
-                  <Download className="mr-1 h-3 w-3" />
-                  Export
+                <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={exportMd}>
+                  <Download className="mr-1 h-3 w-3" />Export
                 </Button>
               </div>
             )}
@@ -385,10 +308,7 @@ export default function OptimizerPage() {
           {!optimized && !analysis ? (
             <div className="flex flex-1 items-center justify-center p-8">
               <div className="text-center">
-                <p className="text-[13px] text-muted-foreground">
-                  Enter content on the left, then click <strong>Analyse</strong> or{' '}
-                  <strong>Optimise</strong>.
-                </p>
+                <p className="text-[13px] text-muted-foreground">Enter content on the left, then click <strong>Analyse</strong> or <strong>Optimise</strong>.</p>
               </div>
             </div>
           ) : (
@@ -406,9 +326,7 @@ export default function OptimizerPage() {
               {/* Scores */}
               {analysis && (
                 <div className="border-b p-4">
-                  <h3 className="mb-3 text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
-                    Scores
-                  </h3>
+                  <h3 className="mb-3 text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Scores</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: 'Overall', score: analysis.overallScore },
@@ -419,28 +337,17 @@ export default function OptimizerPage() {
                       <div key={m.label}>
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[13px]">{m.label}</span>
-                          <span
-                            className={`text-[13px] font-semibold tabular-nums ${scoreColor(m.score)}`}
-                          >
-                            {m.score}
-                          </span>
+                          <span className={`text-[13px] font-semibold tabular-nums ${scoreColor(m.score)}`}>{m.score}</span>
                         </div>
                         <Progress value={m.score} className={`h-1.5 ${barColor(m.score)}`} />
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="text-[11px]">
-                      {analysis.tone.primaryTone}
-                    </Badge>
-                    <Badge variant="secondary" className="text-[11px]">
-                      {analysis.readability.gradeLevel}
-                    </Badge>
+                    <Badge variant="secondary" className="text-[11px]">{analysis.tone.primaryTone}</Badge>
+                    <Badge variant="secondary" className="text-[11px]">{analysis.readability.gradeLevel}</Badge>
                     {analysis.grammar.totalIssues > 0 && (
-                      <Badge variant="secondary" className="text-[11px]">
-                        {analysis.grammar.totalIssues} grammar issue
-                        {analysis.grammar.totalIssues !== 1 ? 's' : ''}
-                      </Badge>
+                      <Badge variant="secondary" className="text-[11px]">{analysis.grammar.totalIssues} grammar issue{analysis.grammar.totalIssues !== 1 ? 's' : ''}</Badge>
                     )}
                   </div>
                 </div>
@@ -451,16 +358,10 @@ export default function OptimizerPage() {
                 <div className="p-4">
                   <Tabs defaultValue="changes">
                     <TabsList className="mb-3 h-8">
-                      <TabsTrigger value="changes" className="text-[12px] h-6">
-                        Changes ({result.changes.length})
-                      </TabsTrigger>
-                      <TabsTrigger value="suggestions" className="text-[12px] h-6">
-                        Suggestions ({result.suggestions.length})
-                      </TabsTrigger>
+                      <TabsTrigger value="changes" className="text-[12px] h-6">Changes ({result.changes.length})</TabsTrigger>
+                      <TabsTrigger value="suggestions" className="text-[12px] h-6">Suggestions ({result.suggestions.length})</TabsTrigger>
                       {result.summary.overallImprovement > 0 && (
-                        <TabsTrigger value="improvements" className="text-[12px] h-6">
-                          Improvements
-                        </TabsTrigger>
+                        <TabsTrigger value="improvements" className="text-[12px] h-6">Improvements</TabsTrigger>
                       )}
                     </TabsList>
                     <TabsContent value="changes">
@@ -468,9 +369,7 @@ export default function OptimizerPage() {
                         {result.changes.map((c, i) => (
                           <div key={i} className="rounded-md bg-muted/50 px-3 py-2">
                             <div className="flex items-start gap-2">
-                              <Badge variant="outline" className="text-[10px] mt-0.5 shrink-0">
-                                {c.type}
-                              </Badge>
+                              <Badge variant="outline" className="text-[10px] mt-0.5 shrink-0">{c.type}</Badge>
                               <span className="text-[13px]">{c.description}</span>
                             </div>
                           </div>
@@ -481,8 +380,7 @@ export default function OptimizerPage() {
                       <ul className="space-y-1.5">
                         {result.suggestions.map((s, i) => (
                           <li key={i} className="flex items-start gap-2 text-[13px]">
-                            <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            {s}
+                            <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />{s}
                           </li>
                         ))}
                       </ul>
@@ -494,14 +392,12 @@ export default function OptimizerPage() {
                           { label: 'Readability', val: result.summary.readabilityImprovement },
                           { label: 'SEO', val: result.summary.seoImprovement },
                           { label: 'Grammar', val: result.summary.grammarImprovement },
-                        ]
-                          .filter(m => m.val > 0)
-                          .map((m, i) => (
-                            <div key={i} className="flex items-center justify-between text-[13px]">
-                              <span>{m.label}</span>
-                              <span className="font-medium text-emerald-600">+{m.val}%</span>
-                            </div>
-                          ))}
+                        ].filter(m => m.val > 0).map((m, i) => (
+                          <div key={i} className="flex items-center justify-between text-[13px]">
+                            <span>{m.label}</span>
+                            <span className="font-medium text-emerald-600">+{m.val}%</span>
+                          </div>
+                        ))}
                       </div>
                     </TabsContent>
                   </Tabs>

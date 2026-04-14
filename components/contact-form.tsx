@@ -17,14 +17,7 @@ interface FormData {
   message: string;
 }
 
-const blank: FormData = {
-  name: '',
-  email: '',
-  projectType: '',
-  budget: '',
-  timeline: '',
-  message: '',
-};
+const blank: FormData = { name: '', email: '', projectType: '', budget: '', timeline: '', message: '' };
 
 const selectClass =
   'w-full h-9 px-3 py-1 rounded-md border bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50';
@@ -67,9 +60,7 @@ export default function ContactForm() {
       <Card>
         <CardContent className="py-10 text-center">
           <p className="font-medium mb-1">Message received.</p>
-          <p className="text-sm text-muted-foreground">
-            We&apos;ll review your project and reply within 24 hours.
-          </p>
+          <p className="text-sm text-muted-foreground">We&apos;ll review your project and reply within 24 hours.</p>
         </CardContent>
       </Card>
     );
@@ -82,42 +73,17 @@ export default function ContactForm() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Your name"
-                value={form.name}
-                onChange={set}
-                required
-                disabled={busy}
-              />
+              <Input id="name" name="name" placeholder="Your name" value={form.name} onChange={set} required disabled={busy} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@company.com"
-                value={form.email}
-                onChange={set}
-                required
-                disabled={busy}
-              />
+              <Input id="email" name="email" type="email" placeholder="you@company.com" value={form.email} onChange={set} required disabled={busy} />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="projectType">Service *</Label>
-            <select
-              id="projectType"
-              name="projectType"
-              className={selectClass}
-              value={form.projectType}
-              onChange={set}
-              required
-              disabled={busy}
-            >
+            <select id="projectType" name="projectType" className={selectClass} value={form.projectType} onChange={set} required disabled={busy}>
               <option value="">Select&hellip;</option>
               <option value="document-processing">Document Processing</option>
               <option value="content-analysis">Content Analysis</option>
@@ -130,14 +96,7 @@ export default function ContactForm() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="budget">Budget</Label>
-              <select
-                id="budget"
-                name="budget"
-                className={selectClass}
-                value={form.budget}
-                onChange={set}
-                disabled={busy}
-              >
+              <select id="budget" name="budget" className={selectClass} value={form.budget} onChange={set} disabled={busy}>
                 <option value="">Select&hellip;</option>
                 <option value="under-500">&lt; $500</option>
                 <option value="500-2000">$500 – $2k</option>
@@ -148,14 +107,7 @@ export default function ContactForm() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="timeline">Timeline</Label>
-              <select
-                id="timeline"
-                name="timeline"
-                className={selectClass}
-                value={form.timeline}
-                onChange={set}
-                disabled={busy}
-              >
+              <select id="timeline" name="timeline" className={selectClass} value={form.timeline} onChange={set} disabled={busy}>
                 <option value="">Select&hellip;</option>
                 <option value="asap">ASAP</option>
                 <option value="1-2-weeks">1–2 weeks</option>
@@ -185,9 +137,7 @@ export default function ContactForm() {
             {busy ? 'Sending\u2026' : 'Send message'}
           </Button>
 
-          <p className="text-center text-[12px] text-muted-foreground">
-            We reply within 24 hours. No spam.
-          </p>
+          <p className="text-center text-[12px] text-muted-foreground">We reply within 24 hours. No spam.</p>
         </form>
       </CardContent>
     </Card>

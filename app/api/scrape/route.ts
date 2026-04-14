@@ -98,10 +98,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'TimeoutError') {
-      return NextResponse.json(
-        { error: 'URL took too long to respond (10s timeout).' },
-        { status: 504 }
-      );
+      return NextResponse.json({ error: 'URL took too long to respond (10s timeout).' }, { status: 504 });
     }
     console.error('Scrape error:', error);
     return NextResponse.json({ error: 'Failed to fetch URL.' }, { status: 500 });

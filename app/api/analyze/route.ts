@@ -1,13 +1,213 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+export interface ContentAnalysisRequest {
+  content: string;
+  options?: {
+    analyzeReadability?: boolean;
+    analyzeSEO?: boolean;
+    analyzeTone?: boolean;
+    analyzeGrammar?: boolean;
+  };
+}
+
+export interface ContentAnalysisResponse {
+  analysis: {
+    readability: {
+      score: number;
+      gradeLevel: string;
+      readingEase: string;
+      wordCount: number;
+      sentenceCount: number;
+      averageSentenceLength: number;
+    };
+    seo: {
+      score: number;
+      keywordDensity: Record<string, number>;
+      metaDescriptionLength: number;
+      titleLength: number;
+      headingStructure: string[];
+    };
+    tone: {
+      primaryTone: string;
+      confidence: number;
+      toneScores: Record<string, number>;
+      suggestions: string[];
+    };
+    grammar: {
+      score: number;
+      issues: Array<{
+        type: string;
+        message: string;
+        suggestion: string;
+        position: { start: number; end: number };
+      }>;
+      totalIssues: number;
+    };
+    overallScore: number;
+  };
+  suggestions: string[];
+}
+
+// Mock analysis function - in a real app, this would use AI/ML services
+function analyzeContent(content: string): ContentAnalysisResponse {
+  // Calculate basic metrics
+  const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
+  const sentenceCount = content.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+  const averageSentenceLength = sentenceCount > 0 ? wordCount / sentenceCount : 0;
+
+  // Readability score (Flesch-Kincaid Grade Level approximation)
+  const readabilityScore = Math.min(100, Math.max(0, 100 - averageSentenceLength * 1.5));
+  let gradeLevel = 'College';
+  if (readabilityScore > 80) gradeLevel = '5th Grade';
+  else if (readabilityScore > 60) gradeLevel = '8th Grade';
+  else if (readabilityScore > 50) gradeLevel = 'High School';
+
+  // SEO analysis
+  const words = content
+    .toLowerCase()
+    .split(/\W+/)
+    .filter(w => w.length > 2);
+  const wordFrequency: Record<string, number> = {};
+  words.forEach(word => {
+    wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+  });
+
+  // Get top keywords
+  const topKeywords = Object.entries(wordFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .reduce(
+      (acc, [word, count]) => {
+        acc[word] = Math.round((count / words.length) * 10000) / 100; // percentage
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+  // Tone analysis
+  const toneWords = {
+    formal: ['therefore', 'however', 'furthermore', 'consequently', 'nevertheless'],
+    casual: ['awesome', 'cool', 'hey', 'yeah', 'stuff'],
+    persuasive: ['should', 'must', 'need to', 'essential', 'critical'],
+    informative: ['according to', 'research shows', 'data indicates', 'studies suggest'],
+  };
+
+  let primaryTone = 'neutral';
+  let maxScore = 0;
+  const toneScores: Record<string, number> = {};
+
+  Object.entries(toneWords).forEach(([tone, words]) => {
+    let score = 0;
+    words.forEach(word => {
+      if (content.toLowerCase().includes(word)) score++;
+    });
+    toneScores[tone] = score;
+    if (score > maxScore) {
+      maxScore = score;
+      primaryTone = tone;
+    }
+  });
+
+  // Grammar check (mock)
+  const grammarIssues = [];
+  if (content.length > 0) {
+    // Mock some common issues
+    if (content.includes(' alot ')) {
+      grammarIssues.push({
+        type: 'spelling',
+        message: '"alot" should be "a lot"',
+        suggestion: 'Use "a lot" instead of "alot"',
+        position: { start: content.indexOf(' alot '), end: content.indexOf(' alot ') + 5 },
+      });
+    }
+    if (content.includes(' its ') && !content.includes(" it's ")) {
+      grammarIssues.push({
+        type: 'grammar',
+        message: 'Possible incorrect use of "its" vs "it\'s"',
+        suggestion: 'Check if you mean "it is" (it\'s) or possessive (its)',
+        position: { start: content.indexOf(' its '), end: content.indexOf(' its ') + 4 },
+      });
+    }
+  }
+
+  const grammarScore = Math.max(0, 100 - grammarIssues.length * 10);
+
+  // Overall score (weighted average)
+  const overallScore = Math.round(
+    readabilityScore * 0.3 +
+      (Object.keys(topKeywords).length > 0 ? 70 : 50) * 0.3 +
+      (maxScore > 0 ? 80 : 60) * 0.2 +
+      grammarScore * 0.2
+  );
+
+  const suggestions = [];
+  if (readabilityScore < 60) {
+    suggestions.push('Consider using shorter sentences to improve readability.');
+  }
+  if (Object.keys(topKeywords).length < 3) {
+    suggestions.push('Add more relevant keywords to improve SEO.');
+  }
+  if (grammarScore < 80) {
+    suggestions.push('Review grammar suggestions to improve writing quality.');
+  }
+  if (primaryTone === 'neutral' && content.length > 100) {
+    suggestions.push(
+      'Consider defining a clearer tone (formal, casual, persuasive) for your content.'
+    );
+  }
+
+  return {
+    analysis: {
+      readability: {
+        score: Math.round(readabilityScore),
+        gradeLevel,
+        readingEase:
+          readabilityScore > 60 ? 'Easy' : readabilityScore > 40 ? 'Moderate' : 'Difficult',
+        wordCount,
+        sentenceCount,
+        averageSentenceLength: Math.round(averageSentenceLength * 10) / 10,
+      },
+      seo: {
+        score: Object.keys(topKeywords).length > 0 ? 75 : 50,
+        keywordDensity: topKeywords,
+        metaDescriptionLength: 0, // Would need meta description input
+        titleLength: 0, // Would need title input
+        headingStructure: content.match(/^#{1,6}\s+.+$/gm) || [],
+      },
+      tone: {
+        primaryTone,
+        confidence: maxScore > 0 ? Math.min(100, maxScore * 20) : 50,
+        toneScores,
+        suggestions:
+          primaryTone === 'formal'
+            ? ['Consider adding more transition words for flow.']
+            : primaryTone === 'casual'
+              ? ['Add more conversational phrases for engagement.']
+              : ['Consider defining your target audience more clearly.'],
+      },
+      grammar: {
+        score: grammarScore,
+        issues: grammarIssues,
+        totalIssues: grammarIssues.length,
+      },
+      overallScore,
+    },
+    suggestions,
+  };
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: ContentAnalysisRequest = await request.json();
+
     if (!body.content || typeof body.content !== 'string') {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Content is required and must be a string' },
+        { status: 400 }
+      );
     }
+
+    // Validate content length
     if (body.content.length > 10000) {
       return NextResponse.json(
         { error: 'Content must be less than 10,000 characters' },
@@ -15,59 +215,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!OPENROUTER_API_KEY) {
-      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 });
-    }
+    // Perform analysis
+    const analysis = analyzeContent(body.content);
 
-    const prompt = `Analyze the following content and return a JSON object with this exact structure (no markdown, just raw JSON):
-{
-  "analysis": {
-    "readability": { "score": <0-100>, "gradeLevel": "<grade>", "readingEase": "<Easy|Moderate|Difficult>", "wordCount": <n>, "sentenceCount": <n>, "averageSentenceLength": <n> },
-    "seo": { "score": <0-100>, "keywordDensity": { "<word>": <percentage> }, "metaDescriptionLength": 0, "titleLength": 0, "headingStructure": [] },
-    "tone": { "primaryTone": "<formal|casual|persuasive|informative|neutral>", "confidence": <0-100>, "toneScores": { "formal": <n>, "casual": <n>, "persuasive": <n>, "informative": <n> }, "suggestions": ["<suggestion>"] },
-    "grammar": { "score": <0-100>, "issues": [{ "type": "<type>", "message": "<msg>", "suggestion": "<fix>", "position": { "start": 0, "end": 0 } }], "totalIssues": <n> },
-    "overallScore": <0-100>
-  },
-  "suggestions": ["<suggestion1>", "<suggestion2>", "<suggestion3>"]
-}
-
-Content to analyze:
-"""
-${body.content}
-"""`;
-
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://ai-content-optimizer-pi.vercel.app',
-      },
-      body: JSON.stringify({
-        model: 'deepseek/deepseek-chat',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('OpenRouter error:', err);
-      return NextResponse.json({ error: 'AI analysis failed' }, { status: 502 });
-    }
-
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || '';
-
-    // Extract JSON from response (handle markdown code blocks)
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 502 });
-    }
-
-    const result = JSON.parse(jsonMatch[0]);
-    return NextResponse.json(result);
+    return NextResponse.json(analysis);
   } catch (error) {
     console.error('Analysis error:', error);
     return NextResponse.json({ error: 'Failed to analyze content' }, { status: 500 });
@@ -75,9 +226,17 @@ ${body.content}
 }
 
 export async function GET() {
-  return NextResponse.json({
-    message: 'Content Analysis API',
-    powered_by: 'AI via OpenRouter',
-    endpoints: { POST: 'Analyze content' },
-  });
+  return NextResponse.json(
+    {
+      message: 'Content Analysis API',
+      endpoints: {
+        POST: 'Analyze content',
+        parameters: {
+          content: 'string (required)',
+          options: 'object (optional)',
+        },
+      },
+    },
+    { status: 200 }
+  );
 }

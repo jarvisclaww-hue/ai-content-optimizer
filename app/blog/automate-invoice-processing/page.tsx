@@ -17,12 +17,8 @@ export default function Post() {
       <header className="border-b">
         <div className="mx-auto flex h-12 max-w-3xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <Link
-              href="/blog"
-              className="flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Blog
+            <Link href="/blog" className="flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-3.5 w-3.5" />Blog
             </Link>
           </div>
           <ThemeToggle />
@@ -32,9 +28,7 @@ export default function Post() {
       <article className="mx-auto max-w-3xl px-4 py-12">
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
-            <Badge variant="secondary" className="text-[11px]">
-              Guide
-            </Badge>
+            <Badge variant="secondary" className="text-[11px]">Guide</Badge>
             <span className="text-[12px] text-muted-foreground">April 14, 2026</span>
             <span className="text-[12px] text-muted-foreground">&middot; 6 min read</span>
           </div>
@@ -51,46 +45,29 @@ export default function Post() {
         <div className="prose-custom space-y-6 text-[15px] leading-[1.75]">
           <h2 className="text-xl font-semibold mt-10 mb-3">The problem</h2>
           <p className="text-muted-foreground">
-            A typical small accounting firm processes hundreds of invoices per month for their
-            clients. Each invoice needs the same data extracted: vendor name, invoice number, date,
-            line items, subtotal, GST, and total. This data then goes into Xero, MYOB, or
-            QuickBooks.
+            A typical small accounting firm processes hundreds of invoices per month for their clients.
+            Each invoice needs the same data extracted: vendor name, invoice number, date, line items,
+            subtotal, GST, and total. This data then goes into Xero, MYOB, or QuickBooks.
           </p>
           <p className="text-muted-foreground">
             The manual process looks like this: open the PDF, read each field, type it into the
-            accounting software, double-check the numbers, move to the next invoice. A single
-            invoice takes 2&ndash;5 minutes. Multiply that by 200 invoices a month and you&apos;ve
-            lost a full working day.
+            accounting software, double-check the numbers, move to the next invoice. A single invoice
+            takes 2&ndash;5 minutes. Multiply that by 200 invoices a month and you&apos;ve lost
+            a full working day.
           </p>
 
-          <h2 className="text-xl font-semibold mt-10 mb-3">
-            What an automated pipeline looks like
-          </h2>
+          <h2 className="text-xl font-semibold mt-10 mb-3">What an automated pipeline looks like</h2>
           <p className="text-muted-foreground">
             The goal is simple: the bookkeeper drops a stack of invoice files into a folder (or
-            forwards them to an email address), and the system outputs a structured CSV or JSON file
-            with all the extracted fields — ready to import.
+            forwards them to an email address), and the system outputs a structured CSV or
+            JSON file with all the extracted fields — ready to import.
           </p>
           <p className="text-muted-foreground">The pipeline has four stages:</p>
           <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-2">
-            <li>
-              <strong className="text-foreground">Ingestion</strong> — Accept files via upload,
-              email forwarding, or a watched folder. Support PDF, JPEG, PNG, and TIFF.
-            </li>
-            <li>
-              <strong className="text-foreground">Text extraction</strong> — Use OCR for scanned
-              documents (Tesseract.js or Google Vision) and direct parsing for digital PDFs
-              (pdf-parse).
-            </li>
-            <li>
-              <strong className="text-foreground">Field extraction</strong> — Apply regex patterns
-              and/or an LLM to identify vendor, amount, date, invoice number, GST, and line items
-              from the raw text.
-            </li>
-            <li>
-              <strong className="text-foreground">Export</strong> — Output the structured data as
-              CSV, JSON, or directly into the accounting API (Xero, MYOB, QuickBooks).
-            </li>
+            <li><strong className="text-foreground">Ingestion</strong> — Accept files via upload, email forwarding, or a watched folder. Support PDF, JPEG, PNG, and TIFF.</li>
+            <li><strong className="text-foreground">Text extraction</strong> — Use OCR for scanned documents (Tesseract.js or Google Vision) and direct parsing for digital PDFs (pdf-parse).</li>
+            <li><strong className="text-foreground">Field extraction</strong> — Apply regex patterns and/or an LLM to identify vendor, amount, date, invoice number, GST, and line items from the raw text.</li>
+            <li><strong className="text-foreground">Export</strong> — Output the structured data as CSV, JSON, or directly into the accounting API (Xero, MYOB, QuickBooks).</li>
           </ol>
 
           <h2 className="text-xl font-semibold mt-10 mb-3">Choosing the right extraction method</h2>
@@ -99,11 +76,10 @@ export default function Post() {
             varied your invoices are.
           </p>
           <p className="text-muted-foreground">
-            <strong className="text-foreground">Pattern-based extraction</strong> works well when
-            invoices follow predictable formats. Regex patterns like{' '}
-            <code className="bg-muted px-1 rounded text-[13px]">/Total[:\s]*\$([\d,.]+)/</code> can
-            reliably pull totals, dates, and invoice numbers from structured documents. This is
-            fast, deterministic, and costs nothing to run.
+            <strong className="text-foreground">Pattern-based extraction</strong> works well when invoices
+            follow predictable formats. Regex patterns like <code className="bg-muted px-1 rounded text-[13px]">/Total[:\s]*\$([\d,.]+)/</code> can
+            reliably pull totals, dates, and invoice numbers from structured documents. This is fast,
+            deterministic, and costs nothing to run.
           </p>
           <p className="text-muted-foreground">
             <strong className="text-foreground">LLM-based extraction</strong> handles varied and
@@ -136,24 +112,22 @@ export default function Post() {
 }`}</pre>
           </div>
           <p className="text-muted-foreground">
-            This can be exported as a CSV for bulk import, pushed directly to the Xero API, or
-            stored in a database for review before submission.
+            This can be exported as a CSV for bulk import, pushed directly to the Xero API,
+            or stored in a database for review before submission.
           </p>
 
           <h2 className="text-xl font-semibold mt-10 mb-3">Getting started</h2>
           <p className="text-muted-foreground">
-            If you&apos;re a bookkeeping firm and this sounds like a problem worth solving, you can
-            try our document extraction demo to see entity and field extraction in action — no
-            signup required.
+            If you&apos;re a bookkeeping firm and this sounds like a problem worth solving,
+            you can try our document extraction demo to see entity and field extraction in action —
+            no signup required.
           </p>
           <div className="mt-6 flex gap-3">
             <Link href="/documents">
               <Button size="sm">Try the demo</Button>
             </Link>
             <Link href="/#contact">
-              <Button size="sm" variant="outline">
-                Talk to us about a custom build
-              </Button>
+              <Button size="sm" variant="outline">Talk to us about a custom build</Button>
             </Link>
           </div>
         </div>

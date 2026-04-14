@@ -40,14 +40,8 @@ function extractEntities(text: string): Entity[] {
 
   const patterns: [RegExp, string][] = [
     [/\b[A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?\b/g, 'PERSON'],
-    [
-      /\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:Inc|Corp|LLC|Ltd|Co|Group|Foundation|Institute|University|Pty)\b/g,
-      'ORG',
-    ],
-    [
-      /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/g,
-      'DATE',
-    ],
+    [/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:Inc|Corp|LLC|Ltd|Co|Group|Foundation|Institute|University|Pty)\b/g, 'ORG'],
+    [/\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/g, 'DATE'],
     [/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, 'DATE'],
     [/\b\d{4}-\d{2}-\d{2}\b/g, 'DATE'],
     [/\$[\d,]+(?:\.\d{2})?\b/g, 'MONEY'],
@@ -55,10 +49,7 @@ function extractEntities(text: string): Entity[] {
     [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, 'EMAIL'],
     [/\bhttps?:\/\/[^\s<>]+/g, 'URL'],
     [/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, 'PHONE'],
-    [
-      /\b\d{1,5}\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:St|Ave|Blvd|Dr|Rd|Ln|Ct|Way|Pkwy|Pl|Street|Avenue|Road|Drive|Lane)\.?\b/g,
-      'ADDRESS',
-    ],
+    [/\b\d{1,5}\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\s(?:St|Ave|Blvd|Dr|Rd|Ln|Ct|Way|Pkwy|Pl|Street|Avenue|Road|Drive|Lane)\.?\b/g, 'ADDRESS'],
     [/\bINV[-\s]?\d{3,}\b/g, 'INVOICE_NUM'],
     [/\bABN\s?\d{2}\s?\d{3}\s?\d{3}\s?\d{3}\b/g, 'ABN'],
   ];
@@ -86,10 +77,7 @@ function extractStructuredFields(text: string, entities: Entity[]): StructuredFi
     { rx: /(?:Invoice|Inv)[\s#:.-]*(\S+)/i, label: 'Invoice Number' },
     { rx: /(?:Date|Invoice Date|Issued)[:\s]+([^\n,]+)/i, label: 'Date' },
     { rx: /(?:Due Date|Payment Due)[:\s]+([^\n,]+)/i, label: 'Due Date' },
-    {
-      rx: /(?:Total|Amount Due|Grand Total|Balance Due)[:\s]*\$?([\d,.]+)/i,
-      label: 'Total Amount',
-    },
+    { rx: /(?:Total|Amount Due|Grand Total|Balance Due)[:\s]*\$?([\d,.]+)/i, label: 'Total Amount' },
     { rx: /(?:Subtotal|Sub-total)[:\s]*\$?([\d,.]+)/i, label: 'Subtotal' },
     { rx: /(?:GST|Tax|VAT)[:\s]*\$?([\d,.]+)/i, label: 'Tax' },
     { rx: /(?:ABN)[:\s]*([\d\s]+)/i, label: 'ABN' },
@@ -154,12 +142,7 @@ function processText(text: string, startTime: number): ProcessingResult {
     entities,
     structured,
     summary,
-    stats: {
-      wordCount: words.length,
-      charCount: text.length,
-      entityCount: entities.length,
-      processingMs: Date.now() - startTime,
-    },
+    stats: { wordCount: words.length, charCount: text.length, entityCount: entities.length, processingMs: Date.now() - startTime },
   };
 }
 
@@ -372,8 +355,7 @@ export default function DocumentsPage() {
     const parts: React.ReactNode[] = [];
     let cursor = 0;
     for (const pos of filtered) {
-      if (pos.start > cursor)
-        parts.push(<span key={`t-${cursor}`}>{text.slice(cursor, pos.start)}</span>);
+      if (pos.start > cursor) parts.push(<span key={`t-${cursor}`}>{text.slice(cursor, pos.start)}</span>);
       parts.push(
         <mark
           key={`e-${pos.start}`}
@@ -424,8 +406,7 @@ export default function DocumentsPage() {
             <div className="mb-8 text-center">
               <h1 className="mb-2 text-2xl font-semibold">Document Intelligence</h1>
               <p className="text-[15px] text-muted-foreground">
-                Upload a document or paste text. Get extracted entities, structured fields, and a
-                summary.
+                Upload a document or paste text. Get extracted entities, structured fields, and a summary.
               </p>
             </div>
 
@@ -472,40 +453,18 @@ export default function DocumentsPage() {
                 className="min-h-[100px] text-sm"
               />
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  onClick={handlePaste}
-                  disabled={!pasteText.trim()}
-                  className="text-xs"
-                >
+                <Button size="sm" onClick={handlePaste} disabled={!pasteText.trim()} className="text-xs">
                   Process text
                 </Button>
                 <div className="h-px w-px" />
-                <span className="flex items-center text-[12px] text-muted-foreground mr-1">
-                  Try a sample:
-                </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => loadDemo('invoice')}
-                  className="text-xs h-7"
-                >
+                <span className="flex items-center text-[12px] text-muted-foreground mr-1">Try a sample:</span>
+                <Button size="sm" variant="outline" onClick={() => loadDemo('invoice')} className="text-xs h-7">
                   Invoice
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => loadDemo('contract')}
-                  className="text-xs h-7"
-                >
+                <Button size="sm" variant="outline" onClick={() => loadDemo('contract')} className="text-xs h-7">
                   Contract
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => loadDemo('intake')}
-                  className="text-xs h-7"
-                >
+                <Button size="sm" variant="outline" onClick={() => loadDemo('intake')} className="text-xs h-7">
                   Intake form
                 </Button>
               </div>
@@ -594,18 +553,14 @@ export default function DocumentsPage() {
                         <table className="w-full text-[13px]">
                           <thead>
                             <tr className="border-b text-left">
-                              <th className="pb-2 pr-6 font-medium text-muted-foreground w-40">
-                                Field
-                              </th>
+                              <th className="pb-2 pr-6 font-medium text-muted-foreground w-40">Field</th>
                               <th className="pb-2 font-medium text-muted-foreground">Value</th>
                             </tr>
                           </thead>
                           <tbody>
                             {result.structured.map((f, i) => (
                               <tr key={i} className="border-b last:border-0">
-                                <td className="py-2.5 pr-6 font-medium text-muted-foreground">
-                                  {f.label}
-                                </td>
+                                <td className="py-2.5 pr-6 font-medium text-muted-foreground">{f.label}</td>
                                 <td className="py-2.5 font-mono text-[13px]">{f.value}</td>
                               </tr>
                             ))}
@@ -671,9 +626,7 @@ export default function DocumentsPage() {
                     <CardTitle className="text-base">Auto-generated summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-[14px] leading-relaxed text-muted-foreground">
-                      {result.summary}
-                    </p>
+                    <p className="text-[14px] leading-relaxed text-muted-foreground">{result.summary}</p>
                   </CardContent>
                 </Card>
               </TabsContent>
